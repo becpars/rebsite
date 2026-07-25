@@ -717,7 +717,7 @@ button:hover {
     top: auto;
     max-width: 100%;
     margin: 4rem auto 2rem;
-    text-align: center;
+    text-align: left;
     padding: 0 1.5rem;
   }
 
@@ -729,7 +729,7 @@ button:hover {
     top: auto;
     max-width: 100%;
     margin: 2rem auto;
-    text-align: center;
+    text-align: left;
     padding: 0 1.5rem;
   }
 
