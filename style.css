@@ -1,0 +1,366 @@
+:root {
+  --text: #1a2744;
+  --muted: #2d4a78;
+  --bg: #f5ede0;
+  --border: rgba(255, 255, 255, 0.6);
+  --accent: #1a2744;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Annapurna SIL", Georgia, "Times New Roman", serif;
+  color: var(--text);
+  background: url("clouds.jpg") center / cover no-repeat;
+  background-color: var(--bg);
+  line-height: 1.5;
+  text-align: left;
+}
+
+.wrap {
+  max-width: 400px;
+  padding: 4rem 2rem;
+  position: absolute;
+  left: calc(65% + 80px);
+  top: 30px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.avatar-wrap {
+  position: relative;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+
+.avatar {
+  width: 400px;
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  box-shadow:
+    0 2px 8px rgba(26, 39, 68, 0.15),
+    0 8px 30px rgba(26, 39, 68, 0.1);
+}
+
+.credit {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.75rem;
+  font-style: italic;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.credit:hover {
+  background: var(--accent);
+}
+
+.credit .tooltip {
+  position: absolute;
+  bottom: 130%;
+  left: 0;
+  width: max-content;
+  max-width: 200px;
+  background: var(--text);
+  color: var(--bg);
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.credit:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: var(--text);  
+}
+
+p.tagline {
+  color: var(--muted);
+  margin: 0 0 2rem;
+}
+
+nav.links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+nav.links a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+}
+
+nav.links a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-label {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+  cursor: default;
+}
+
+.dropdown:hover .dropdown-label {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dropdown-menu a {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+a.back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+a.back:hover {
+  color: var(--accent);
+}
+
+main {
+  margin-top: 1rem;
+}
+
+main a {
+  color: var(--muted);
+}
+
+main a:hover {
+  color: var(--accent);
+}
+
+.lead {
+  font-size: 25px;
+}
+
+.about-1,
+.about-2,
+.about-3,
+.about-4 {
+  font-size: 13px;
+  position: absolute;
+  max-width: 280px;
+  padding: 0 1.5rem;
+}
+
+.about-1 {
+  left: 8%;
+  top: 8%;
+}
+
+.about-2 {
+  left: 55%;
+  top: 30%;
+}
+
+.about-3 {
+  left: 15%;
+  top: 55%;
+}
+
+.about-4 {
+  left: 55%;
+  top: 78%;
+}
+
+.music-1,
+.music-2,
+.music-3 {
+  font-size: 13px;
+  position: absolute;
+  max-width: 400px;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.music-1 {
+  left: 8%;
+  top: 8%;
+}
+
+.music-3 {
+  left: 50%;
+  top: 38%;
+}
+
+.music-2 {
+  left: 15%;
+  top: 70%;
+}
+
+a {
+  color:#1a2744;
+}
+
+.small {
+  font-size:small;
+  color: var(--muted);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  text-align: left;
+  width: 140%;
+  margin-left: -20%;
+}
+
+.contact-form label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.contact-form input,
+.contact-form textarea {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--text);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--text);
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.contact-form button {
+  align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+  .wrap {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+
+  .music-1 {
+    position: relative;
+    left: auto;
+    top: auto;
+    max-width: 100%;
+    margin: 4rem auto 2rem;
+  }
+
+  .music-2,
+  .music-3 {
+    position: relative;
+    left: auto;
+    top: auto;
+    max-width: 100%;
+    margin: 2rem auto;
+  }
+
+  .contact-form {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@keyframes sparkle-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
+  }
+}
