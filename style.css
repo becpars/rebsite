@@ -15,7 +15,7 @@ body {
   min-height: 100vh;
   font-family: "Annapurna SIL", Georgia, "Times New Roman", serif;
   color: var(--text);
-  background: url("clouds.jpg") center / cover no-repeat;
+  background: url("static/clouds.jpg") center / cover no-repeat;
   background-color: var(--bg);
   line-height: 1.5;
   text-align: left;
