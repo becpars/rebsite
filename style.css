@@ -503,6 +503,18 @@ main a:hover {
   top: 70%;
 }
 
+.home-quote {
+  position: fixed;
+  bottom: 2rem;
+  left: calc(25% + 25px);
+  transform: translateX(-50%);
+  opacity: 0.6;
+}
+
+.home-quote blockquote {
+  color: var(--muted);
+}
+
 a {
   color:#1a2744;
 }
@@ -692,6 +704,15 @@ button:hover {
     margin: 2rem auto;
     text-align: center;
     padding: 0 1.5rem;
+  }
+
+  .home-quote {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 1rem !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    width: 85%;
   }
 }
 
