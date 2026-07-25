@@ -511,9 +511,13 @@ main a:hover {
   top: 70%;
 }
 
-a.home-quote {
+a.home-quote,
+a.home-quote:hover,
+a.home-quote blockquote,
+a.home-quote cite {
   text-decoration: none;
   color: inherit;
+  border: none;
 }
 
 .home-quote {
