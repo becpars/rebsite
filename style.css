@@ -504,16 +504,28 @@ main a:hover {
 }
 
 .home-quote {
-  position: fixed !important;
-  bottom: 2rem !important;
-  top: auto !important;
+  position: fixed;
+  bottom: 2rem;
   left: calc(25% + 25px);
   transform: translateX(-50%);
   opacity: 0.6;
-  max-height: none;
+  max-width: 400px;
+  text-align: center;
+  font-size: 13px;
+  padding: 0 1.5rem;
 }
 
 .home-quote blockquote {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.home-quote cite {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85em;
   color: var(--muted);
 }
 
@@ -709,14 +721,10 @@ button:hover {
   }
 
   .home-quote {
-    position: fixed !important;
-    left: 50% !important;
-    bottom: 1rem !important;
-    top: auto !important;
-    transform: translateX(-50%) !important;
+    left: 50%;
+    bottom: 1rem;
     width: 85%;
-    max-height: none !important;
-    overflow-y: visible !important;
+    max-width: none;
   }
 }
 
