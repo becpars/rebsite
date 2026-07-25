@@ -17,9 +17,42 @@
       <h1>conducting</h1>
     </main>
   </div>
+  <a href="https://youtu.be/alS5LuVhSNw?si=XxTCN1UrbD-YwbJ8&t=216" target="_blank" rel="noopener" class="conducting-gif" style="left:calc(78% - 20px);top:calc(60% - 75px)">
+    <img src="hallelujah.gif" alt="" style="width:280px;border-radius:6px;opacity:0.85">
+  </a>
   <div class="conducting-hero">
     <img src="static/simran.png" alt="A beautiful painting of Rebecca conducting" class="avatar">
     <p class="small">This painting was done by my friend <a href="https://www.simrangleason.com/" target="_blank">Simran Gleason</a> during a 2026 concert with Aurora Chorus.</p>
   </div>
+  <a href="https://youtu.be/k2_2DT_cbRw" target="_blank" rel="noopener" class="conducting-gif" style="left:8%;top:25%">
+    <img src="moongoddess.gif" alt="" style="width:280px;border-radius:6px;opacity:0.85">
+  </a>
+<script>
+document.querySelectorAll('.conducting-gif img').forEach(img => {
+  const src = img.src;
+  const freeze = () => {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    try {
+      img.dataset.gif = src;
+      img.src = c.toDataURL();
+    } catch(e) {}
+  };
+  if (img.complete) freeze(); else img.addEventListener('load', freeze);
+
+  img.parentElement.addEventListener('mouseenter', () => {
+    img.src = img.dataset.gif;
+  });
+  img.parentElement.addEventListener('mouseleave', () => {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    try { img.src = c.toDataURL(); } catch(e) {}
+  });
+});
+</script>
 </body>
 </html>
