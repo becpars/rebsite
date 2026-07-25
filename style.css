@@ -504,11 +504,13 @@ main a:hover {
 }
 
 .home-quote {
-  position: fixed;
-  bottom: 2rem;
+  position: fixed !important;
+  bottom: 2rem !important;
+  top: auto !important;
   left: calc(25% + 25px);
   transform: translateX(-50%);
   opacity: 0.6;
+  max-height: none;
 }
 
 .home-quote blockquote {
@@ -713,6 +715,8 @@ button:hover {
     top: auto !important;
     transform: translateX(-50%) !important;
     width: 85%;
+    max-height: none !important;
+    overflow-y: visible !important;
   }
 }
 
