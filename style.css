@@ -519,7 +519,7 @@ main a:hover {
   margin: 0;
   font-style: italic;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--text);
 }
 
 .home-quote cite {
