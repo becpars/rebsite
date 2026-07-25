@@ -580,7 +580,7 @@ button:hover {
     left: auto;
     top: auto;
     max-width: 100%;
-    margin: 0.5rem auto 2rem;
+    margin: -1rem auto 2rem;
   }
 
   .music-2,
@@ -631,7 +631,7 @@ button:hover {
     left: auto !important;
     top: auto !important;
     display: block;
-    margin: 0.5rem auto;
+    margin: -1rem auto;
     text-align: center;
   }
 
