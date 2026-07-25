@@ -15,9 +15,43 @@
     <a href="index.html" class="back">&larr; home</a>
     <main>
       <h1>teaching</h1>
-      <p>My aims as a teacher are to serve individuals as attentively as possible in finding the natural passion of their own musicality. I'm here to help people identify the musicality already within them, and to be pulled by it toward their highest potential of expression. I am interested in the sort of musical pedagogy that develops the character of the whole person.</p>
-      <p>I have been teaching professionally since 2012. I love to teach private lessons in piano, voice, and music theory.</p>
+      <p>My aims as a teacher are to serve individuals as attentively as possible in finding the natural passion of their own musicality.</p>
+      <p class="small">I'm here to help people identify the musicality already within them, and to be pulled by it toward their highest potential of expression. I am interested in the sort of musical pedagogy that develops the character of the whole person.</p>
+      <p>I have been teaching professionally since 2012, and <span class="hover-gif-trigger">informally for much longer.<img src="pianolesson.gif" alt="" class="hover-gif"></span> I love to teach private lessons in piano, voice, and music theory.</p>
     </main>
   </div>
+  <div class="teaching-cta">
+    <p>Curious about lessons?</p>
+    <a href="https://calendly.com/rmpars/say-hello" target="_blank" rel="noopener"><button id="calendar-btn">let's talk about it</button></a>
+  </div>
+
+<script>
+function sparkle(el) {
+  const rect = el.getBoundingClientRect();
+  const chars = ['✦', '✧', '⋆', '˚', '✶'];
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[Math.floor(Math.random() * chars.length)];
+    s.style.cssText = `
+      position:fixed;
+      left:${rect.left + Math.random() * rect.width}px;
+      top:${rect.top + Math.random() * rect.height}px;
+      pointer-events:none;
+      font-size:${10 + Math.random() * 14}px;
+      color:var(--accent);
+      z-index:999;
+      animation:sparkle-fly 0.7s ease-out forwards;
+    `;
+    s.style.setProperty('--dx', `${(Math.random() - 0.5) * 80}px`);
+    s.style.setProperty('--dy', `${-30 - Math.random() * 50}px`);
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+document.getElementById('calendar-btn').addEventListener('click', function() {
+  sparkle(this);
+});
+</script>
 </body>
 </html>
