@@ -168,6 +168,7 @@
       <cite>— Simone Weil, <em>Love in the Void</em></cite>
     </div>
   </div>
+  <h1 class="marquee-title">influences, admirations, gratitudes</h1>
   <button class="next-quote" aria-label="Next quote">&#x203A;</button>
   <div class="marquee">
     <div class="marquee-track">
@@ -225,7 +226,7 @@
 
   function overlaps(el) {
     const r = el.getBoundingClientRect();
-    const others = document.querySelectorAll('.wrap, .bookshelf-1, .bookshelf-2, .next-quote');
+    const others = document.querySelectorAll('.wrap, .bookshelf-1, .bookshelf-2, .next-quote, .marquee-title, .marquee');
     for (const o of others) {
       const b = o.getBoundingClientRect();
       if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) return true;
