@@ -658,6 +658,7 @@ button:hover {
     max-width: none;
     max-height: 70vh;
     overflow-y: auto;
+    z-index: 5;
   }
 
   .next-quote {
