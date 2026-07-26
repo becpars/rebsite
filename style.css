@@ -541,7 +541,7 @@ main a:hover {
 .music-3 {
   left: 50%;
   transform: translateX(-50%);
-  top: calc(38% - 80px);
+  top: calc(38% - 110px);
 }
 
 .music-2 {
@@ -667,8 +667,9 @@ button:hover {
   .music-2,
   .music-3 {
     position: relative;
-    left: auto;
-    top: auto;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
     max-width: 100%;
     margin: 2rem auto;
   }
