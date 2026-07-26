@@ -492,6 +492,9 @@ main a:hover {
 
 .gif-carousel {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
 }
 
@@ -777,6 +780,7 @@ button:hover {
     position: relative !important;
     left: auto !important;
     top: auto !important;
+    transform: none !important;
     display: block;
     margin: -1rem auto;
     text-align: center;
