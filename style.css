@@ -546,7 +546,7 @@ main a:hover {
 
 .music-2 {
   left: 70%;
-  top: 66%;
+  top: calc(66% - 50px);
 }
 
 a.home-quote,
