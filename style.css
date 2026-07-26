@@ -490,6 +490,54 @@ main a:hover {
   filter: sepia(0.1) saturate(0.85) brightness(1);
 }
 
+.gif-carousel {
+  position: absolute;
+  text-align: center;
+}
+
+.gif-track {
+  position: relative;
+  width: 280px;
+}
+
+.gif-slide {
+  display: none;
+}
+
+.gif-slide.active {
+  display: block;
+}
+
+.gif-slide img {
+  filter: sepia(0.25) saturate(0.7) brightness(0.95);
+  transition: filter 0.3s ease;
+  box-shadow: 0 2px 8px rgba(26,39,68,0.15), 0 8px 30px rgba(26,39,68,0.1);
+}
+
+.gif-slide img:hover {
+  filter: sepia(0.1) saturate(0.85) brightness(1);
+}
+
+.gif-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+}
+
+.gif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gif-dot.active {
+  background: var(--muted);
+}
+
 .conducting-hero {
   position: absolute;
   top: 50%;
@@ -720,7 +768,8 @@ button:hover {
     opacity: 0.5;
   }
 
-  .conducting-gif {
+  .conducting-gif,
+  .gif-carousel {
     position: relative !important;
     left: auto !important;
     top: auto !important;
@@ -729,9 +778,14 @@ button:hover {
     text-align: center;
   }
 
-  .conducting-gif img {
+  .conducting-gif img,
+  .gif-slide img {
     width: 80% !important;
     max-width: 300px;
+  }
+
+  .gif-track {
+    width: 100%;
   }
 
   .conducting-gif .small,
