@@ -497,7 +497,7 @@ main a:hover {
 
 .gif-track {
   position: relative;
-  width: 280px;
+  width: 380px;
 }
 
 .gif-slide {
@@ -544,6 +544,10 @@ main a:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+}
+
+.conducting-hero .avatar {
+  width: 380px;
 }
 
 .lead {
