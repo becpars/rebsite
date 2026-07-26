@@ -26,26 +26,30 @@
   <div class="gif-carousel">
     <div class="gif-track">
       <div class="gif-slide active">
-        <img src="static/simran.png" alt="A beautiful painting of Rebecca conducting" style="width:380px;border-radius:6px">
-        <p class="small">Painting by my friend <a href="https://www.simrangleason.com/" target="_blank">Simran Gleason</a>, 2026 concert with Aurora Chorus.</p>
+        <img src="static/simran.png" alt="A beautiful painting of Rebecca conducting" style="width:480px;border-radius:6px">
+        <p class="small">This painting was done by my friend <a href="https://www.simrangleason.com/" target="_blank">Simran Gleason</a> during a 2026 concert with Aurora Chorus.</p>
       </div>
       <div class="gif-slide">
         <a href="https://youtu.be/alS5LuVhSNw?si=XxTCN1UrbD-YwbJ8&t=216" target="_blank" rel="noopener">
-          <img src="hallelujah.gif" alt="" style="width:380px;border-radius:6px">
+          <img src="hallelujah.gif" alt="" style="width:480px;border-radius:6px">
         </a>
         <p class="small">Selections from Handel's Messiah, 2025</p>
       </div>
       <div class="gif-slide">
         <a href="https://youtu.be/k2_2DT_cbRw" target="_blank" rel="noopener">
-          <img src="moongoddess.gif" alt="" style="width:380px;border-radius:6px">
+          <img src="moongoddess.gif" alt="" style="width:480px;border-radius:6px">
         </a>
         <p class="small">Moon Goddess by Jocelyn Hagen, 2024</p>
       </div>
     </div>
-    <div class="gif-dots">
-      <span class="gif-dot active"></span>
-      <span class="gif-dot"></span>
-      <span class="gif-dot"></span>
+    <div class="gif-nav">
+      <button class="gif-arrow gif-prev">&lsaquo;</button>
+      <div class="gif-dots">
+        <span class="gif-dot active"></span>
+        <span class="gif-dot"></span>
+        <span class="gif-dot"></span>
+      </div>
+      <button class="gif-arrow gif-next">&rsaquo;</button>
     </div>
   </div>
 <script>
@@ -87,6 +91,13 @@
   });
 
   dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
+
+  carousel.querySelector('.gif-prev').addEventListener('click', () => {
+    if (current > 0) show(current - 1);
+  });
+  carousel.querySelector('.gif-next').addEventListener('click', () => {
+    if (current < slides.length - 1) show(current + 1);
+  });
 })();
 </script>
 </body>
