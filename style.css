@@ -541,7 +541,7 @@ main a:hover {
 .music-3 {
   left: 50%;
   transform: translateX(-50%);
-  top: 10%;
+  top: calc(10% + 40px);
 }
 
 .music-2 {
