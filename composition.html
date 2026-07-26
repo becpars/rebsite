@@ -15,6 +15,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .pdf-viewer { position: relative; width: 100%; margin: 0.5rem 0; }
+    .pdf-viewer canvas { width: 100%; display: block; border-radius: 4px; box-shadow: 0 2px 8px rgba(26,39,68,0.1); }
+    .pdf-nav { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-top: 0.5rem; }
+    .pdf-nav button { font-family: inherit; font-size: 0.8rem; padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; }
+    .pdf-nav button:hover { color: var(--accent); border-color: var(--accent); }
+    .pdf-nav span { font-size: 0.8rem; color: var(--muted); }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -25,7 +33,14 @@
   </div>
   <div class="music-1">
     <h2>SATB</h2>
-    <embed src="static/augustsatb.pdf" type="application/pdf" width="100%" height="500%"/>
+    <div class="pdf-viewer" data-pdf="static/augustsatb.pdf">
+      <canvas></canvas>
+      <div class="pdf-nav">
+        <button class="pdf-prev">&larr;</button>
+        <span class="pdf-info"></span>
+        <button class="pdf-next">&rarr;</button>
+      </div>
+    </div>
     <audio controls>
       <source src="static/augustaudio.wav" type="audio/wav">
       <p>Your browser doesn't support audio playback.
@@ -35,7 +50,14 @@
   </div>
   <div class="music-3">
     <h2>SSAA</h2>
-    <embed src="static/catheyowes.pdf" type="application/pdf" width="100%" height="500%"/>
+    <div class="pdf-viewer" data-pdf="static/catheyowes.pdf">
+      <canvas></canvas>
+      <div class="pdf-nav">
+        <button class="pdf-prev">&larr;</button>
+        <span class="pdf-info"></span>
+        <button class="pdf-next">&rarr;</button>
+      </div>
+    </div>
     <audio controls>
       <source src="static/catheyowes.wav" type="audio/wav">
       <p>Your browser doesn't support audio playback.
@@ -50,6 +72,38 @@
     <div id="remind-status" style="font-size:11px" role="status" aria-live="polite"></div>
   </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+document.querySelectorAll('.pdf-viewer').forEach(async viewer => {
+  const canvas = viewer.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  const info = viewer.querySelector('.pdf-info');
+  const pdf = await pdfjsLib.getDocument(viewer.dataset.pdf).promise;
+  let pageNum = 1;
+
+  async function renderPage(num) {
+    const page = await pdf.getPage(num);
+    const scale = (viewer.clientWidth * 2) / page.getViewport({ scale: 1 }).width;
+    const viewport = page.getViewport({ scale });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    info.textContent = `${num} / ${pdf.numPages}`;
+  }
+
+  viewer.querySelector('.pdf-prev').addEventListener('click', () => {
+    if (pageNum > 1) renderPage(--pageNum);
+  });
+  viewer.querySelector('.pdf-next').addEventListener('click', () => {
+    if (pageNum < pdf.numPages) renderPage(++pageNum);
+  });
+
+  renderPage(1);
+});
+</script>
 <script>
 function sparkle(el) {
   const rect = el.getBoundingClientRect();
