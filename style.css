@@ -481,14 +481,6 @@ main a:hover {
   top: 60%;
 }
 
-.conducting-gif img {
-  filter: sepia(0.25) saturate(0.7) brightness(0.95);
-  transition: filter 0.3s ease;
-}
-
-.conducting-gif img:hover {
-  filter: sepia(0.1) saturate(0.85) brightness(1);
-}
 
 .gif-carousel {
   position: absolute;
@@ -512,13 +504,7 @@ main a:hover {
 }
 
 .gif-slide img {
-  filter: sepia(0.25) saturate(0.7) brightness(0.95);
-  transition: filter 0.3s ease;
   box-shadow: 0 2px 8px rgba(26,39,68,0.15), 0 8px 30px rgba(26,39,68,0.1);
-}
-
-.gif-slide img:hover {
-  filter: sepia(0.1) saturate(0.85) brightness(1);
 }
 
 .gif-dots {
