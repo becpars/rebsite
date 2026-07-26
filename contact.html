@@ -28,9 +28,37 @@
         <input type="email" id="email" name="email" required>
         <label for="message">Message</label>
         <textarea id="message" name="message" rows="5" required></textarea>
-        <button type="submit">Send</button>
+        <button type="submit" id="send-btn">Send</button>
       </form>
     </main>
   </div>
+<script>
+function sparkle(el) {
+  const rect = el.getBoundingClientRect();
+  const chars = ['✦', '✧', '⋆', '˚', '✶'];
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[Math.floor(Math.random() * chars.length)];
+    s.style.cssText = `
+      position:fixed;
+      left:${rect.left + Math.random() * rect.width}px;
+      top:${rect.top + Math.random() * rect.height}px;
+      pointer-events:none;
+      font-size:${10 + Math.random() * 14}px;
+      color:var(--accent);
+      z-index:999;
+      animation:sparkle-fly 0.7s ease-out forwards;
+    `;
+    s.style.setProperty('--dx', `${(Math.random() - 0.5) * 80}px`);
+    s.style.setProperty('--dy', `${-30 - Math.random() * 50}px`);
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+document.getElementById('send-btn').addEventListener('click', function() {
+  sparkle(this);
+});
+</script>
 </body>
 </html>
