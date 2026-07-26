@@ -539,13 +539,14 @@ main a:hover {
 }
 
 .music-3 {
-  left: calc(50% - 10px);
-  top: calc(38% - 30px);
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(38% - 80px);
 }
 
 .music-2 {
-  left: 15%;
-  top: 85%;
+  left: 70%;
+  top: 66%;
 }
 
 a.home-quote,
