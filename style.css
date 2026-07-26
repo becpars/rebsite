@@ -539,8 +539,8 @@ main a:hover {
 }
 
 .music-3 {
-  left: 50%;
-  top: 38%;
+  left: calc(50% - 10px);
+  top: calc(38% - 30px);
 }
 
 .music-2 {
