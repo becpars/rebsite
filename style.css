@@ -541,7 +541,7 @@ main a:hover {
 .music-3 {
   left: 50%;
   transform: translateX(-50%);
-  top: calc(38% - 110px);
+  top: 35%;
 }
 
 .music-2 {
@@ -666,12 +666,14 @@ button:hover {
 
   .music-2,
   .music-3 {
-    position: relative;
+    position: relative !important;
     left: auto !important;
     top: auto !important;
     transform: none !important;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 2rem auto;
+    text-align: center;
   }
 
   .contact-form {
