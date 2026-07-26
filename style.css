@@ -481,6 +481,15 @@ main a:hover {
   top: 60%;
 }
 
+.conducting-gif img {
+  filter: sepia(0.25) saturate(0.7) brightness(0.95);
+  transition: filter 0.3s ease;
+}
+
+.conducting-gif img:hover {
+  filter: sepia(0.1) saturate(0.85) brightness(1);
+}
+
 .conducting-hero {
   position: absolute;
   top: 50%;
