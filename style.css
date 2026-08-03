@@ -571,7 +571,8 @@ main a:hover {
 .about-1,
 .about-2,
 .about-3,
-.about-4 {
+.about-4,
+.about-5 {
   font-size: 13px;
   position: absolute;
   max-width: 280px;
@@ -596,6 +597,11 @@ main a:hover {
 .about-4 {
   left: 55%;
   top: 78%;
+}
+
+.about-5 {
+  left: 80%;
+  top: 50%;
 }
 
 .music-1,
@@ -848,7 +854,8 @@ button:hover {
 
   .about-2,
   .about-3,
-  .about-4 {
+  .about-4,
+  .about-5 {
     position: relative;
     left: auto;
     top: auto;
