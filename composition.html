@@ -213,21 +213,13 @@ function sparkle(el) {
 
 (() => {
   const TOPIC    = 'rebsite-3f9k2xqp';
-  const COOLDOWN = 30000;
 
   const btn    = document.getElementById('remind-btn');
   const status = document.getElementById('remind-status');
-  let lastSent = 0;
 
   const say = (msg) => { status.textContent = msg; };
 
   btn.addEventListener('click', async () => {
-    const wait = COOLDOWN - (Date.now() - lastSent);
-    if (wait > 0) {
-      say(`please chill for ${Math.ceil(wait / 1000)}s`);
-      return;
-    }
-
     sparkle(btn);
     btn.disabled = true;
     say('Sending…');
@@ -243,7 +235,6 @@ function sparkle(el) {
         body: 'to be composing more'
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      lastSent = Date.now();
       say('Thanks :~)');
     } catch (err) {
       say("Couldn't send — try again?");
