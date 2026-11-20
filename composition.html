@@ -79,6 +79,36 @@
     .score-content.open {
       display: block;
     }
+
+    /* Score preview: one fixed spot in the middle of the page */
+    .score-preview {
+      display: none;
+      position: absolute;
+      top: 200px; /* below the page heading */
+      left: calc(8% + 430px);
+      width: clamp(200px, calc(57% - 450px), 440px); /* stops short of the heading column */
+    }
+
+    .score-preview.open {
+      display: block;
+    }
+
+    .score-preview .pdf-viewer {
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .score-preview {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: auto;
+        min-width: 0;
+        max-width: 440px;
+        margin: 0 auto 2rem;
+        padding: 0 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -91,17 +121,9 @@
   <div class="music-1">
     <ul class="composition-list">
       <li>
-        <button class="score-toggle">Whatever an August is, let it leak into my chest (SATB)</button>
+        <button class="score-toggle" data-pdf="static/augustsatb_perusal.pdf">Whatever an August is, let it leak into my chest (SATB)</button>
         <div class="score-content">
           <p class="small">Here's a piece I wrote in collaboration with my friend <a href="https://www.brandonwint.com/" target="_blank">Brandon Wint</a>, with whom I have also recorded <a href="https://brandonwint.bandcamp.com/album/infinite-mercies" target="_blank">a few</a> <a href="https://brandonwint.bandcamp.com/album/alive" target="_blank">albums</a>.</p>
-          <div class="pdf-viewer" data-pdf="static/augustsatb_perusal.pdf">
-            <canvas></canvas>
-            <div class="pdf-nav">
-              <button class="pdf-prev">&larr;</button>
-              <span class="pdf-info"></span>
-              <button class="pdf-next">&rarr;</button>
-            </div>
-          </div>
           <audio controls>
             <source src="static/augustaudio.wav" type="audio/wav">
             <p>Your browser doesn't support audio playback.
@@ -110,17 +132,9 @@
         </div>
       </li>
       <li>
-        <button class="score-toggle">Ca' the Yowes (SSAA)</button>
+        <button class="score-toggle" data-pdf="static/catheyowes_perusal.pdf">Ca' the Yowes (SSAA)</button>
         <div class="score-content">
           <p class="small">Here's an arrangement I did of one of my favorite folk songs.</p>
-          <div class="pdf-viewer" data-pdf="static/catheyowes_perusal.pdf">
-            <canvas></canvas>
-            <div class="pdf-nav">
-              <button class="pdf-prev">&larr;</button>
-              <span class="pdf-info"></span>
-              <button class="pdf-next">&rarr;</button>
-            </div>
-          </div>
           <audio controls>
             <source src="static/catheyowes.wav" type="audio/wav">
             <p>Your browser doesn't support audio playback.
@@ -130,6 +144,17 @@
       </li>
     </ul>
   </div>
+  <div class="score-preview" aria-live="polite">
+    <div class="pdf-viewer">
+      <canvas></canvas>
+      <div class="pdf-nav">
+        <button class="pdf-prev" aria-label="Previous page">&larr;</button>
+        <span class="pdf-info"></span>
+        <button class="pdf-next" aria-label="Next page">&rarr;</button>
+      </div>
+    </div>
+  </div>
+
   <div class="music-2">
     <h2>I'd like to be composing more.</h2>
     <p class="small">Push this button to send me an anonymous push notification encouraging me to compose more.</p>
@@ -142,7 +167,49 @@
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// Toggle score dropdowns and lazy-load PDFs
+// Toggle score dropdowns; the open piece's score shows in the preview area
+const preview = document.querySelector('.score-preview');
+const canvas = preview.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+const info = preview.querySelector('.pdf-info');
+const pdfCache = {};
+let currentPdf = null;
+let pageNum = 1;
+let renderTask = null;
+let wantedUrl = null;
+
+async function renderPage(num) {
+  const pdf = currentPdf;
+  const page = await pdf.getPage(num);
+  if (pdf !== currentPdf) return; // a different piece was opened meanwhile
+  const scale = (preview.clientWidth * 2) / page.getViewport({ scale: 1 }).width;
+  const viewport = page.getViewport({ scale });
+  if (renderTask) renderTask.cancel();
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  renderTask = page.render({ canvasContext: ctx, viewport });
+  try { await renderTask.promise; } catch (e) { return; }
+  info.textContent = `${num} / ${pdf.numPages}`;
+}
+
+async function showScore(url) {
+  wantedUrl = url;
+  preview.classList.add('open');
+  if (!pdfCache[url]) pdfCache[url] = pdfjsLib.getDocument(url).promise;
+  const pdf = await pdfCache[url];
+  if (wantedUrl !== url) return; // another piece was opened (or this one closed) while loading
+  currentPdf = pdf;
+  pageNum = 1;
+  renderPage(1);
+}
+
+preview.querySelector('.pdf-prev').addEventListener('click', () => {
+  if (currentPdf && pageNum > 1) renderPage(--pageNum);
+});
+preview.querySelector('.pdf-next').addEventListener('click', () => {
+  if (currentPdf && pageNum < currentPdf.numPages) renderPage(++pageNum);
+});
+
 document.querySelectorAll('.score-toggle').forEach(btn => {
   btn.addEventListener('click', () => {
     const content = btn.nextElementSibling;
@@ -156,45 +223,18 @@ document.querySelectorAll('.score-toggle').forEach(btn => {
     });
 
     const isOpen = content.classList.toggle('open');
-    btn.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
 
-    // Load PDF on first open
     if (isOpen) {
-      const viewer = content.querySelector('.pdf-viewer');
-      if (viewer && !viewer.dataset.loaded) {
-        viewer.dataset.loaded = 'true';
-        initPdfViewer(viewer);
-      }
+      showScore(btn.dataset.pdf);
+    } else {
+      content.querySelectorAll('audio').forEach(a => a.pause());
+      preview.classList.remove('open');
+      currentPdf = null;
+      wantedUrl = null;
     }
   });
 });
-
-async function initPdfViewer(viewer) {
-  const canvas = viewer.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
-  const info = viewer.querySelector('.pdf-info');
-  const pdf = await pdfjsLib.getDocument(viewer.dataset.pdf).promise;
-  let pageNum = 1;
-
-  async function renderPage(num) {
-    const page = await pdf.getPage(num);
-    const scale = (viewer.clientWidth * 2) / page.getViewport({ scale: 1 }).width;
-    const viewport = page.getViewport({ scale });
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    info.textContent = `${num} / ${pdf.numPages}`;
-  }
-
-  viewer.querySelector('.pdf-prev').addEventListener('click', () => {
-    if (pageNum > 1) renderPage(--pageNum);
-  });
-  viewer.querySelector('.pdf-next').addEventListener('click', () => {
-    if (pageNum < pdf.numPages) renderPage(++pageNum);
-  });
-
-  renderPage(1);
-}
 </script>
 <script>
 function sparkle(el) {
