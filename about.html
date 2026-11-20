@@ -15,16 +15,144 @@
   <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .sky {
+      padding: 7rem 0 4rem;
+      text-align: center;
+    }
+
+    .sky .intro {
+      font-size: 13px;
+      max-width: 340px;
+      margin: 0 auto 1rem;
+    }
+
+    /* The constellation: a decorative band across the full page width.
+       Stars are placed by % so they spread with the screen. */
+    .constellation {
+      position: relative;
+      width: 100%;
+      height: 190px;
+    }
+
+
+    .star {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 0.5rem;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .star .glyph {
+      position: relative;
+      font-size: 22px;
+      line-height: 1;
+      transition: transform 0.4s ease, text-shadow 0.4s ease;
+      animation: twinkle 3.5s ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+
+    /* Soft halo of light behind each star, hidden until hover */
+    .star .glyph::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 70px;
+      height: 70px;
+      transform: translate(-50%, -50%) scale(0.4);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 250, 225, 0.2) 35%, rgba(255, 255, 255, 0) 70%);
+      opacity: 0;
+      z-index: -1;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .star .name {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      opacity: 0.8;
+    }
+
+    .star:hover .glyph {
+      transform: scale(1.35);
+      text-shadow: 0 0 4px #fff, 0 0 10px #fff, 0 0 20px rgba(255, 245, 210, 0.9);
+      animation: none;
+      opacity: 1;
+    }
+
+    .star:hover .glyph::before {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    .about-text {
+      max-width: 520px;
+      margin: 2.5rem auto 0;
+      padding: 0 1.5rem;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .about-text p {
+      margin: 0 0 1.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .sky { padding-top: 1rem; }
+      .constellation { height: 140px; }
+      .star .name { font-size: 11px; }
+      .star .glyph { font-size: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .star .glyph { animation: none; }
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
     <a href="index.html" class="back">&larr; home</a>
   </div>
-  <p class="about-1"><span class="lead">My worldview</span> is in perpetual flux. To love a person is to keep trying to know them, to listen to their changes, to resist the urge to compress them into a static object. To love the world is the same.</p>
-  <p class="about-2"><span class="lead">I am a musician,</span> which I take as a duty to be an envoy of the muses, and to carry the communal responsibility to animate creative life &amp; thought.</p>
-  <p class="about-3"><span class="lead">I want to see</span> people freed from any myth that singing requires something they do not have. I want to live in a future where people more commonly sing together at the dinner table and in their living rooms.</p>
-  <p class="about-4"><span class="lead">I currently work</span> as the Artistic Director of <a href="https://aurorachorus.org/">Aurora Chorus.</a></p>
-  <p class="about-5"><span class="lead">My north stars</span> are honesty, wisdom, contribution, mastery, and growth; it is by these values that I navigate.</p>
+
+  <div class="sky">
+    <p class="intro small">my north stars</p>
+
+    <div class="constellation">
+      <div class="star" style="left:8%; top:76%; --delay:0s">
+        <span class="glyph">✶</span><span class="name">Honesty</span>
+      </div>
+      <div class="star" style="left:29%; top:44%; --delay:0.7s">
+        <span class="glyph">✶</span><span class="name">Mastery</span>
+      </div>
+      <div class="star" style="left:50%; top:28%; --delay:1.4s">
+        <span class="glyph">✶</span><span class="name">Growth</span>
+      </div>
+      <div class="star" style="left:71%; top:44%; --delay:2.1s">
+        <span class="glyph">✶</span><span class="name">Contribution</span>
+      </div>
+      <div class="star" style="left:92%; top:76%; --delay:2.8s">
+        <span class="glyph">✶</span><span class="name">Wisdom</span>
+      </div>
+    </div>
+
+    <div class="about-text">
+      <p><span class="lead">My worldview</span> is in perpetual flux. To love a person is to keep trying to know them, to listen to their changes, to resist the urge to compress them into a static object. To love the world is the same.</p>
+      <p><span class="lead">I am a musician,</span> which I take as a duty to be an envoy of the muses, and to carry the communal responsibility to animate creative life &amp; thought.</p>
+      <p><span class="lead">I want to see</span> people freed from any myth that singing requires something they do not have. I want to live in a future where people more commonly sing together at the dinner table and in their living rooms.</p>
+      <p><span class="lead">I currently work</span> as the Artistic Director of <a href="https://aurorachorus.org/">Aurora Chorus.</a></p>
+    </div>
+  </div>
   <a href="gratitudes.html" class="book-btn" title="bookshelf">☁️</a>
 </body>
 </html>
