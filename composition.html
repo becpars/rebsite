@@ -146,6 +146,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 document.querySelectorAll('.score-toggle').forEach(btn => {
   btn.addEventListener('click', () => {
     const content = btn.nextElementSibling;
+
+    // Close any other open dropdown (and pause its audio) so only one is open at a time
+    document.querySelectorAll('.score-toggle.open').forEach(other => {
+      if (other === btn) return;
+      other.classList.remove('open');
+      other.nextElementSibling.classList.remove('open');
+      other.nextElementSibling.querySelectorAll('audio').forEach(a => a.pause());
+    });
+
     const isOpen = content.classList.toggle('open');
     btn.classList.toggle('open');
 
