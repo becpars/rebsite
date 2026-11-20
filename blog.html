@@ -12,7 +12,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
   <link rel="stylesheet" href="style.css">
   <script>
@@ -25,20 +25,20 @@
   <style>
     /* Light mode (default): softer than the rest of the site, for easy reading */
     :root {
-      --text: #3b4560;
-      --muted: #6e7891;
-      --bg: #f3ece1;
-      --accent: #2a3550;
-      --rule: rgba(59, 69, 96, 0.18);
+      --text: #565f75;
+      --muted: #838a9d;
+      --bg: #f1ebe1;
+      --accent: #3b4560;
+      --rule: rgba(86, 95, 117, 0.15);
     }
 
     /* Dark mode colors: only used when a reader clicks the toggle */
     :root[data-theme="dark"] {
-      --text: #c9c1b3;
-      --muted: #8a94aa;
-      --bg: #1e2536;
-      --accent: #e3dccf;
-      --rule: rgba(201, 193, 179, 0.15);
+      --text: #b2ab9f;
+      --muted: #7f889c;
+      --bg: #252c3c;
+      --accent: #cfc8bb;
+      --rule: rgba(178, 171, 159, 0.12);
     }
 
     /* Plain page: no cloud background, everything in one scrolling column */
@@ -49,6 +49,12 @@
 
     a {
       color: var(--text);
+    }
+
+    /* Home link uses the blog's typewriter font */
+    a.back {
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      font-size: 13px;
     }
 
     .theme-toggle,
@@ -86,8 +92,9 @@
     .essay {
       max-width: 620px;
       margin: 0 auto;
-      padding: 1.5rem 1.5rem 5rem;
-      font-size: 16px;
+      padding: 1.5rem;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      font-size: 13px;
       line-height: 1.7;
     }
 
@@ -117,6 +124,27 @@
       text-decoration: none;
     }
 
+    /* Hand-drawn cloud separator between essays */
+    .essay-break {
+      display: flex;
+      justify-content: center;
+      margin: 1rem auto;
+    }
+
+    .essay-break svg {
+      width: 30px;
+      height: auto;
+      fill: none;
+      stroke: var(--muted);
+      stroke-width: 1.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .essay-break:last-of-type {
+      margin-bottom: 5rem;
+    }
+
     @media (max-width: 768px) {
       .wrap {
         padding: 2rem 1rem 0;
@@ -131,7 +159,7 @@
       }
 
       .essay {
-        padding: 1rem 1rem 4rem;
+        padding: 1rem;
       }
     }
   </style>
@@ -141,12 +169,11 @@
     <a href="index.html" class="back">&larr; home</a>
     <button class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
     <main>
-      <h1>writing</h1>
     </main>
   </div>
 
   <article class="essay">
-    <h2>The Heaven's Flock</h2>
+    <h2>The Heavens' Flock</h2>
     <p class="small date">Nov 10 2026</p>
 <p>I think I could have turned out quite a nihilist if not for my love for choral experience. I have a hard time with faith. I am often confused. Of very little I am certain, but at my most timelessly certain, I love my father and mother, and I love (choral) music. The operative word here being love; I know that I love these things, so I know there is something. Amo ergo sum.</p>
 
@@ -181,6 +208,10 @@
   <p id="fn1" class="small"><sup>1</sup> By paradox I suppose I mean multiple things being true that appear contradictory, without yet having a model that can meaningfully synthesize them. <a href="#ref1">&#8617;</a></p>
 </div>
   </article>
+
+  <div class="essay-break" aria-hidden="true">
+    <svg viewBox="0 0 34 22"><path d="M9 17.5 H24 A4.5 4.5 0 0 0 24.5 8.6 A7 7 0 0 0 11.2 8.8 A4.5 4.5 0 0 0 9 17.5 Z" /></svg>
+  </div>
 <script>
 (() => {
   const root = document.documentElement;
