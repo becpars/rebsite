@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rebecca Bonner</title>
+  <meta property="og:title" content="Rebecca Bonner">
+  <meta property="og:description" content="song weaver, harmony gardener, sound rotator">
+  <meta property="og:image" content="https://hellorebec.ca/static/simran.png">
+  <meta property="og:url" content="https://hellorebec.ca">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply a saved light/dark choice before the page paints
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.dataset.theme = saved;
+    } catch (e) {}
+  </script>
+  <style>
+    /* Light mode (default): softer than the rest of the site, for easy reading */
+    :root {
+      --text: #3b4560;
+      --muted: #6e7891;
+      --bg: #f3ece1;
+      --accent: #2a3550;
+      --rule: rgba(59, 69, 96, 0.18);
+    }
+
+    /* Dark mode colors: only used when a reader clicks the toggle */
+    :root[data-theme="dark"] {
+      --text: #c9c1b3;
+      --muted: #8a94aa;
+      --bg: #1e2536;
+      --accent: #e3dccf;
+      --rule: rgba(201, 193, 179, 0.15);
+    }
+
+    /* Plain page: no cloud background, everything in one scrolling column */
+    body {
+      background: var(--bg);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    a {
+      color: var(--text);
+    }
+
+    .theme-toggle,
+    .theme-toggle:hover,
+    .theme-toggle:focus,
+    .theme-toggle:active {
+      position: absolute;
+      top: 2.6rem;
+      right: 1.5rem;
+      margin: 0;
+      padding: 0.25rem 0.5rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .theme-toggle:hover {
+      color: var(--accent);
+    }
+
+    .wrap {
+      position: relative;
+      left: auto;
+      top: auto;
+      transform: none;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 0;
+      text-align: left;
+    }
+
+    .essay {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 5rem;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .essay h2 {
+      margin: 0 0 0.25rem;
+    }
+
+    .essay .date {
+      margin: 0 0 1.5rem;
+    }
+
+    .essay p {
+      margin: 0 0 1.1rem;
+    }
+
+    .essay sup a {
+      text-decoration: none;
+    }
+
+    .footnotes {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--rule, rgba(26, 39, 68, 0.2));
+    }
+
+    .footnotes a {
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .wrap {
+        padding: 2rem 1rem 0;
+      }
+
+      .theme-toggle,
+      .theme-toggle:hover,
+      .theme-toggle:focus,
+      .theme-toggle:active {
+        top: 1.6rem;
+        right: 1rem;
+      }
+
+      .essay {
+        padding: 1rem 1rem 4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="index.html" class="back">&larr; home</a>
+    <button class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
+    <main>
+      <h1>writing</h1>
+    </main>
+  </div>
+
+  <article class="essay">
+    <h2>The Heaven's Flock</h2>
+    <p class="small date">Nov 10 2026</p>
+<p>I think I could have turned out quite a nihilist if not for my love for choral experience. I have a hard time with faith. I am often confused. Of very little I am certain, but at my most timelessly certain, I love my father and mother, and I love (choral) music. The operative word here being love; I know that I love these things, so I know there is something. Amo ergo sum.</p>
+
+<p>I have quite a hard time with my favorite art form in practice; I often feel alienation and woe when I am in a choir. I struggle to sing in one for long these days. I feel much more safe directing one. I feel at home in it. There is a way I can communicate in my more holy tongue. People will see the best of me without trying to piece me together by the capricious details of mundane life. I do not fear that I do not belong. I do not even remember that I could fear.</p>
+
+<p>In a beautiful choir, I think people can live with the sorts of paradoxes<sup><a href="#fn1" id="ref1">1</a></sup> that in prosaic life we tend to defensively collapse. By being summoned to the most beautiful thing, and meeting others there, we find one another above, but without denying, the place of our differences. Here, I witness a lot of acceptance that is very difficult to invite people to on the ground. It can begin a communal connection from a place of disarmament.</p>
+
+<p>I am a sucker for finding communion in a reverence for timeless & universal things. Perhaps because I am kept alive by this feeling of unity being possible, the drive toward harmonizing, the feeling that divinity is at the end of the harmony of all things. Humanity’s north stars are nourishing to regularly recalibrate to, and it is good to visit with all of our dead and living there.</p>
+
+<p>Here is a song that I love in this vein. I think you should listen to it only with good headphones and good quality of attention, otherwise it is probably not worth bothering. The text comes from the following poem.</p>
+
+
+<p><strong>Be Here When I Can See You, When I Can’t</strong> by Paulann Petersen</p>
+
+<p><i>Stars, you are the heavens’ flock,</i></p>
+<p><i>tangling your pale wool across</i></p>
+<p><i>the night sky, bits of oily fleece</i></p>
+<p><i>catching on barbs of darkness to swirl</i></p>
+<p><i>in black wind. You appear, disappear</i></p>
+<p><i>by thousands, scattered wide to graze</i></p>
+<p><i>but never straying. While I — a mere</i></p>
+<p><i>shepherd of these words — am lost.</i></p>
+
+<p><i>What can I do but build a small blaze,</i></p>
+<p><i>and feed it with branches the trees let fall —</i></p>
+<p><i>that twiggy clatter strewn along the ground.</i></p>
+<p><i>Lichen crusting such dead limbs</i></p>
+<p><i>glows silver, white. Earth-food for a fire</i></p>
+<p><i>so unlike and like your own.</i></p>
+
+<div class="footnotes">
+  <p id="fn1" class="small"><sup>1</sup> By paradox I suppose I mean multiple things being true that appear contradictory, without yet having a model that can meaningfully synthesize them. <a href="#ref1">&#8617;</a></p>
+</div>
+  </article>
+<script>
+(() => {
+  const root = document.documentElement;
+  const btn = document.querySelector('.theme-toggle');
+  const isDark = () => root.dataset.theme === 'dark';
+  const render = () => {
+    btn.textContent = isDark() ? '☼' : '☾';
+    btn.title = isDark() ? 'Light mode' : 'Dark mode';
+  };
+  btn.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
