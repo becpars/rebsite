@@ -355,6 +355,11 @@
     .pad.solfege #backspace { grid-row: 2; }
     /* ♭ and ♯ sit on the top row, right after major / minor */
     .pad .acc { grid-row: 1; }
+    /* with ♭ ♯ on top, the bottom row drops their two columns so ⌫ sits right after the keys */
+    .pad.numbers-mode,
+    .pad.solfege { grid-template-columns: 2.6rem repeat(14, 1fr) minmax(1.6rem, 0.9fr); }
+    .pad.numbers-mode #backspace,
+    .pad.solfege #backspace { grid-column: 16; }
 
 
 
@@ -473,6 +478,8 @@
     @media (max-width: 768px) {
       .wrap { padding: 1.5rem 1rem 0; }
       .pad { gap: 0.12rem; grid-template-columns: 2.2rem repeat(14, 1fr) repeat(2, minmax(1.1rem, 0.8fr)) minmax(1.3rem, 0.9fr); }
+      .pad.numbers-mode,
+      .pad.solfege { grid-template-columns: 2.2rem repeat(14, 1fr) minmax(1.3rem, 0.9fr); }
       .pad button { font-size: 0.72rem; }
       .pad.solfege [data-deg] { font-size: 0.55rem; }
       .pad .mode-toggle { font-size: 0.58rem; }
