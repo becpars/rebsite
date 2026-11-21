@@ -480,6 +480,8 @@
       .pad { gap: 0.12rem; grid-template-columns: 2.2rem repeat(14, 1fr) repeat(2, minmax(1.1rem, 0.8fr)) minmax(1.3rem, 0.9fr); }
       .pad.numbers-mode,
       .pad.solfege { grid-template-columns: 2.2rem repeat(14, 1fr) minmax(1.3rem, 0.9fr); }
+      /* phones: each song's notes always sit on their own line under the title */
+      .song-main .degrees { flex-basis: 100%; }
       .pad button { font-size: 0.72rem; }
       .pad.solfege [data-deg] { font-size: 0.55rem; }
       .pad .mode-toggle { font-size: 0.58rem; }
@@ -497,7 +499,7 @@
   </div>
 
   <div class="page">
-    <p class="small intro">I built this tool to help myself & my students. Maybe it can help you too. <br><br> Type scale degrees, solfège, or tap the keys to find songs that begin that way. Use <code>b3</code>, <code>#4</code> for chromatic notes. Use <code>5,</code> to indicate a lower octave, and <code>5'</code> to indicate a higher octave. <br><br> This is a work in progress :-) Let me know if you encounter any issues, or have song suggestions to add!
+    <p class="small intro">I built this tool to help myself & my students. Maybe it can help you too. <br><br> Type scale degrees, solfège, or tap the keys to find songs that begin that way. Use <code>b3</code>, <code>#4</code> for chromatic notes. Use commas after a number to indicate a lower octave, and apostrophes to indicate a higher octave. <br><br> This is a work in progress :-) Let me know if you encounter any issues, or have song suggestions to add!
       <span class="feedback">
         <input id="feedback-text" type="text" maxlength="500" placeholder="what's missing?" aria-label="Feedback">
         <button id="feedback-send" type="button">send</button>
