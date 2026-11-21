@@ -350,11 +350,11 @@
     .pad.numbers-mode .quality-key,
     .pad.solfege .quality-key { display: block; grid-row: 1; }
     .pad.numbers-mode .deg-key,
-    .pad.numbers-mode .acc,
     .pad.numbers-mode #backspace,
     .pad.solfege .deg-key,
-    .pad.solfege .acc,
     .pad.solfege #backspace { grid-row: 2; }
+    /* ♭ and ♯ sit on the top row, right after major / minor */
+    .pad .acc { grid-row: 1; }
 
 
 
@@ -522,8 +522,8 @@
       <button type="button" class="deg-key" data-deg="5" style="grid-column:13">5</button>
       <button type="button" class="deg-key" data-deg="6" style="grid-column:14">6</button>
       <button type="button" class="deg-key" data-deg="7" style="grid-column:15">7</button>
-      <button type="button" class="acc" data-acc="b" style="grid-column:16">♭</button>
-      <button type="button" class="acc" data-acc="#" style="grid-column:17">♯</button>
+      <button type="button" class="acc" data-acc="b" style="grid-column:8">♭</button>
+      <button type="button" class="acc" data-acc="#" style="grid-column:9">♯</button>
       <button type="button" class="int-key" data-semis="0" title="unison" style="grid-column:2">P1</button>
       <button type="button" class="int-key" data-semis="1" title="minor 2nd" style="grid-column:3">m2</button>
       <button type="button" class="int-key" data-semis="2" title="major 2nd" style="grid-column:4">M2</button>
@@ -740,7 +740,7 @@ const SONGS = [
 
   // 1960s
   { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", also: "" },
-  { title: "Moon River", credit: "Audrey Hepburn", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", also: "" },
+  { title: "Moon River", credit: "Henry Mancini", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", also: "" },
   { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6", also: "" },
   { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "8 7 6 5 4 5 4 3 2 3 2 1", rhythm: "0.5 0.5 0.5 1 1 0.75 0.25 0.75 0.25 0.25 0.25 1", also: "" },
   { title: "My Girl", credit: "The Temptations", year: "1964", notes: "", also: "" },   // TODO: needs melody
