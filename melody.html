@@ -381,6 +381,27 @@
       text-underline-offset: 2px;
     }
 
+    /* the current lyric syllable, floating just left of the song's numbers (so nothing shifts) */
+    .degrees { position: relative; }
+    .lyric-now {
+      position: absolute;
+      right: 100%;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;      /* centered on the numbers' line */
+      justify-content: center;  /* each syllable centered in its spot */
+      width: 5rem;
+      padding-right: 0.3rem;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      font-size: 0.66rem;
+      color: var(--text);
+      white-space: nowrap;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .lyric-now.done { opacity: 0; }
+
     /* "with the same interval" heading between the result groups */
     .section-head {
       margin: 1.4rem 0 0.25rem;
@@ -482,6 +503,7 @@
       .pad.solfege { grid-template-columns: 2.2rem repeat(14, 1fr) minmax(1.3rem, 0.9fr); }
       /* phones: each song's notes always sit on their own line under the title */
       .song-main .degrees { flex-basis: 100%; }
+      .degrees .lyric-now { position: static; display: inline-block; width: 5rem; padding: 0 0 0 0.3rem; text-align: center; line-height: 1; vertical-align: middle; }
       .pad button { font-size: 0.72rem; }
       .pad.solfege [data-deg] { font-size: 0.55rem; }
       .pad .mode-toggle { font-size: 0.58rem; }
@@ -605,76 +627,83 @@
     also: "3 2 1 2 3 3 3"
     also: "3 2 1 2 3 3 3 / 5 5 6 5"
   They search the same way as the opening; ▶ still plays the opening.
+
+  lyrics (optional): the words of the opening, one syllable per note, separated by spaces.
+  They appear one at a time when ▶ is pressed.
+    end a syllable with "-" to join it to the next:   "Twin- kle twin- kle lit- tle star"
+    use "_" when a syllable is held over another note: "A- ma- zing _ grace"
+  Only add lyrics for songs in the public domain (traditional songs, old hymns and carols);
+  most songs from roughly 1930 on are still under copyright.
 */
 const SONGS = [
   // ---------- folk, children's & traditional ----------
-  { title: "Twinkle, Twinkle, Little Star", credit: "French traditional", year: "ca. 1760s", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2", also: "" },
-  { title: "Go Down Moses", credit: "African-American Spiritual", year: "ca. 1853", notes: "5, b3 b3 2 2 b3 b3 1", rhythm: "1 1 1 1 1 1 1 2", also: "" },
-  { title: "The Parting Glass", credit: "Scottish traditional", year: "ca. 1700s", notes: "3 2 1 6, 6, 5, 6, 1 1 2 2", rhythm: "0.5 0.5 1.5 0.5 0.25 1.25 0.5 1 0.5 0.5 1", also: "" },
-  { title: "Mary Had a Little Lamb", credit: "American traditional", year: "ca. 1830s", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2", also: "" },
-  { title: "Frère Jacques", credit: "French traditional", year: "ca. 1780s", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1", also: "" },
-  { title: "Row, Row, Row Your Boat", credit: "American traditional", year: "ca. 1850s", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5", also: "" },
-  { title: "Hot Cross Buns", credit: "English traditional", year: "ca. 1790s", notes: "3 2 1", rhythm: "1 1 2", also: "" },
-  { title: "Three Blind Mice", credit: "English traditional", year: "ca. 1600s", notes: "3 2 1 3 2 1", rhythm: "1.5 1.5 3 1.5 1.5 3", bpm: 156, also: "" },
-  { title: "London Bridge Is Falling Down", credit: "English traditional", year: "ca. 1740s", notes: "5 6 5 4 3 4 5", rhythm: "1.5 0.5 1 1 1 1 2", also: "" },
-  { title: "Old MacDonald Had a Farm", credit: "American traditional", year: "ca. 1910s", notes: "1 1 1 5, 6, 6, 5,", rhythm: "1 1 1 1 1 1 2", bpm: 132, also: "" },
-  { title: "Yankee Doodle", credit: "American traditional", year: "ca. 1750s", notes: "1 1 2 3 1 3 2", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 120, also: "" },
-  { title: "Itsy Bitsy Spider", credit: "American traditional", year: "ca. 1910s", notes: "5, 1 1 1 2 3 3", rhythm: "0.5 1 0.5 1 0.5 1.5 1", bpm: 150, also: "" },
-  { title: "Pop Goes the Weasel", credit: "English traditional", year: "ca. 1850s", notes: "5 2 4 3 1", rhythm: "3 2 1 3 3", bpm: 300, also: "" },
-  { title: "If You're Happy and You Know It", credit: "Traditional", year: "ca. 1950s", notes: "5, 5, 1 1 1 1 1 1 7, 1 2", rhythm: "0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 1", also: "" },
-  { title: "The Wheels on the Bus", credit: "Verna Hills", year: "1939", notes: "5, 1 1 1 1 3 5 3 1", rhythm: "1 1 0.7 0.3 1 1 1 1 2", bpm: 130, also: "" },
-  { title: "Skip to My Lou", credit: "American traditional", year: "ca. 1840s", notes: "3 3 1 1 3 3 5", also: "" },
-  { title: "This Old Man", credit: "English traditional", year: "ca. 1870s", notes: "5 3 5 5 3 5", rhythm: "1 1 2 1 1 2", also: "" },
-  { title: "Clementine", credit: "American traditional", year: "ca. 1880s", notes: "1 1 1 5, 3 3 3 1", rhythm: "0.75 0.25 1 1 0.75 0.25 1 1", also: "" },
-  { title: "She'll Be Comin' Round the Mountain", credit: "American traditional", year: "ca. 1890s", notes: "5, 6, 1 1 1 1 6, 5, 3, 5, 1", rhythm: "0.5 0.5 0.25 0.75 0.75 0.25 0.5 0.5 0.5 0.5 3", also: "" },
-  { title: "Kumbaya", credit: "African-American Spiritual", year: "ca. 1926", notes: "1 3 5 5 5 6 6 5", rhythm: "1 1 1.5 0.5 2 1 1 3", also: "" },
-  { title: "Michael, Row the Boat Ashore", credit: "African-American Spiritual", year: "ca. 1867", notes: "1 3 5 3 5 6 5", rhythm: "1 1 1.7 0.3 0.7 1 2", bpm: 160, also: "" },
-  { title: "Amazing Grace", credit: "John Newton (words), American tune", year: "1835", notes: "5, 1 3 1 3 2 1 6, 5,", rhythm: "1 2 0.5 0.5 2 1 2 1 2", bpm: 96, also: "" },
-  { title: "My Bonnie Lies Over the Ocean", credit: "Scottish traditional", year: "ca. 1880s", notes: "5, 3 2 1 2 1 6, 5, 3,", rhythm: "1 1.5 0.5 1 1 1 1 1 3", bpm: 160, also: "" },
-  { title: "Auld Lang Syne", credit: "Scottish traditional", year: "ca. 1780s", notes: "5, 1 7, 1 3 2 1 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, also: "" },
-  { title: "Shenandoah", credit: "American traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 4 6 5", rhythm: "1 1 1 3 1 1 1 1 3", also: "" },
-  { title: "Danny Boy (Londonderry Air)", credit: "Irish traditional", year: "ca. 1850s", notes: "5, 1 2 3 2 3 6 5 3 2 1 6,", rhythm: "1 1 1 3 1 1 1 1 1 1 1 3", also: "" },
-  { title: "Home on the Range", credit: "Daniel Kelley", year: "ca. 1872", notes: "5 4 3 2 3", rhythm: "3 1 1.5 0.5 3", bpm: 144, also: "" },
-  { title: "Simple Gifts", credit: "Joseph Brackett", year: "1848", notes: "5, 5, 1 1 2 3 1 3 4 5 5 4 3", rhythm: "0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1", also: "" },
-  { title: "You Are My Sunshine", credit: "Jimmie Davis", year: "1940", notes: "5, 1 2 3 3", rhythm: "1 1 1 2 3", bpm: 160, also: "" },
+  { title: "Twinkle, Twinkle, Little Star", credit: "French traditional", year: "ca. 1760s", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2", lyrics: "Twin- kle twin- kle lit- tle star", also: "" },
+  { title: "Go Down Moses", credit: "African-American Spiritual", year: "ca. 1853", notes: "5, b3 b3 2 2 b3 b3 1", rhythm: "1 1 1 1 1 1 1 2", lyrics: "When Is- rael was in E- gypt's land", also: "" },
+  { title: "The Parting Glass", credit: "Scottish traditional", year: "ca. 1700s", notes: "3 2 1 6, 6, 5, 6, 1 1 2 2", rhythm: "0.5 0.5 1.5 0.5 0.25 1.25 0.5 1 0.5 0.5 1", lyrics: "of of all the mo- ney that e'er I I had", also: "" },
+  { title: "Mary Had a Little Lamb", credit: "American traditional", year: "ca. 1830s", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2", lyrics: "Ma- ry had a lit- tle lamb", also: "" },
+  { title: "Frère Jacques", credit: "French traditional", year: "ca. 1780s", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1", lyrics: "Frè- re Jac- ques, frè- re Jac- ques", also: "" },
+  { title: "Row, Row, Row Your Boat", credit: "American traditional", year: "ca. 1850s", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5", lyrics: "Row, row, row your boat", also: "" },
+  { title: "Hot Cross Buns", credit: "English traditional", year: "ca. 1790s", notes: "3 2 1", rhythm: "1 1 2", lyrics: "Hot cross buns", also: "" },
+  { title: "Three Blind Mice", credit: "English traditional", year: "ca. 1600s", notes: "3 2 1 3 2 1", rhythm: "1.5 1.5 3 1.5 1.5 3", bpm: 156, lyrics: "Three blind mice, three blind mice", also: "" },
+  { title: "London Bridge Is Falling Down", credit: "English traditional", year: "ca. 1740s", notes: "5 6 5 4 3 4 5", rhythm: "1.5 0.5 1 1 1 1 2", lyrics: "Lon- don Bridge is fall- ing down", also: "" },
+  { title: "Old MacDonald Had a Farm", credit: "American traditional", year: "ca. 1910s", notes: "1 1 1 5, 6, 6, 5,", rhythm: "1 1 1 1 1 1 2", bpm: 132, lyrics: "Old Mac- Don- ald had a farm", also: "" },
+  { title: "Yankee Doodle", credit: "American traditional", year: "ca. 1750s", notes: "1 1 2 3 1 3 2", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 120, lyrics: "Yan- kee Doo- dle went to town", also: "" },
+  { title: "Itsy Bitsy Spider", credit: "American traditional", year: "ca. 1910s", notes: "5, 1 1 1 2 3 3", rhythm: "0.5 1 0.5 1 0.5 1.5 1", bpm: 150, lyrics: "The it- sy bit- sy spi- der", also: "" },
+  { title: "Pop Goes the Weasel", credit: "English traditional", year: "ca. 1850s", notes: "5 2 4 3 1", rhythm: "3 2 1 3 3", bpm: 300, lyrics: "Pop! goes the wea- sel", also: "" },
+  { title: "If You're Happy and You Know It", credit: "Traditional", year: "ca. 1950s", notes: "5, 5, 1 1 1 1 1 1 7, 1 2", rhythm: "0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 1", lyrics: "If you're hap- py and you know it clap your hands", also: "" },
+  { title: "The Wheels on the Bus", credit: "Verna Hills", year: "1939", notes: "5, 1 1 1 1 3 5 3 1", rhythm: "1 1 0.7 0.3 1 1 1 1 2", bpm: 130, lyrics: "The wheels on the bus go round and round", also: "" },
+  { title: "Skip to My Lou", credit: "American traditional", year: "ca. 1840s", notes: "3 1 3 3 3 5", rhythm: "1 1 0.5 0.25 0.25 1", lyrics: "skip, skip, skip to my Lou", also: "" },
+  { title: "This Old Man", credit: "English traditional", year: "ca. 1870s", notes: "5 3 5 5 3 5", rhythm: "1 1 2 1 1 2", lyrics: "This old man, he played one", also: "" },
+  { title: "Clementine", credit: "American traditional", year: "ca. 1880s", notes: "1 1 1 5, 3 3 3 1", rhythm: "0.75 0.25 1 1 0.75 0.25 1 1", lyrics: "Oh my dar- ling, oh my dar- ling", also: "" },
+  { title: "She'll Be Comin' Round the Mountain", credit: "American traditional", year: "ca. 1890s", notes: "5, 6, 1 1 1 1 6, 5, 3, 5, 1", rhythm: "0.5 0.5 0.25 0.75 0.75 0.25 0.5 0.5 0.5 0.5 3", lyrics: "She'll be com- in' round the moun- tain when she comes", also: "" },
+  { title: "Kumbaya", credit: "African-American Spiritual", year: "ca. 1926", notes: "1 3 5 5 5 6 6 5", rhythm: "1 1 1.5 0.5 2 1 1 3", lyrics: "Kum- ba- ya, my Lord, kum- ba- ya", also: "" },
+  { title: "Michael, Row the Boat Ashore", credit: "African-American Spiritual", year: "ca. 1867", notes: "1 3 5 3 5 6 5", rhythm: "1 1 1.7 0.3 0.7 1 2", bpm: 160, lyrics: "Mi- chael, row the boat a- shore", also: "" },
+  { title: "Amazing Grace", credit: "John Newton (words), American tune", year: "1835", notes: "5, 1 3 1 3 2 1 6, 5,", rhythm: "1 2 0.5 0.5 2 1 2 1 2", bpm: 96, lyrics: "A- ma- zing _ grace, how sweet the sound", also: "" },
+  { title: "My Bonnie Lies Over the Ocean", credit: "Scottish traditional", year: "ca. 1880s", notes: "5, 3 2 1 2 1 6, 5, 3,", rhythm: "1 1.5 0.5 1 1 1 1 1 3", bpm: 160, lyrics: "My Bon- nie lies o- ver the o- cean", also: "" },
+  { title: "Auld Lang Syne", credit: "Scottish traditional", year: "ca. 1780s", notes: "5, 1 7, 1 3 2 1 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, lyrics: "Should auld ac- quain- tance be for- got", also: "" },
+  { title: "Shenandoah", credit: "American traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 4 6 5", rhythm: "1 1 1 3 1 1 1 1 3", lyrics: "Oh Shen- an- doah, I long to hear you", also: "" },
+  { title: "Danny Boy (Londonderry Air)", credit: "Irish traditional", year: "ca. 1850s", notes: "5, 1 2 3 2 3 6 5 3 2 1 6,", rhythm: "1 1 1 3 1 1 1 1 1 1 1 3", lyrics: "Oh Dan- ny boy, the pipes the pipes are call- _ ing", also: "" },
+  { title: "Home on the Range", credit: "Daniel Kelley", year: "ca. 1872", notes: "5 4 3 2 3", rhythm: "3 1 1.5 0.5 3", bpm: 144, lyrics: "Home, home on the range", also: "" },
+  { title: "Simple Gifts", credit: "Joseph Brackett", year: "1848", notes: "5, 5, 1 1 2 3 1 3 4 5 5 4 3", rhythm: "0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1", lyrics: "'Tis the gift to be sim- ple, 'tis the gift to be free", also: "" },
+  { title: "You Are My Sunshine", credit: "Jimmie Davis", year: "1940", notes: "5, 1 2 3 3", rhythm: "1 1 1 2 3", lyrics: "You are my sun- shine", bpm: 160, also: "" },
   { title: "Brahms' Lullaby", credit: "Johannes Brahms", year: "1868", notes: "3 3 5 3 3 5", rhythm: "0.5 0.5 2 0.5 0.5 2", bpm: 86, also: "" },
   { title: "Greensleeves", credit: "English traditional", year: "ca. 1580s", mode: "minor", notes: "1 b3 4 5 6 5 4 2 b7,", rhythm: "0.5 1 0.5 0.75 0.25 0.5 1 0.5 1", bpm: 84, also: "" },
-  { title: "Scarborough Fair", credit: "English traditional", year: "ca. 1600s", mode: "minor", notes: "1 1 5 5 5 2 b3 2 1", rhythm: "2 1 0.5 1.5 1 1.5 0.5 1 3", also: "" },
+  { title: "Scarborough Fair", credit: "English traditional", year: "ca. 1600s", mode: "minor", notes: "1 1 5 5 5 2 b3 2 1", rhythm: "2 1 0.5 1.5 1 1.5 0.5 1 3", lyrics: "Are you go- ing to Scar- bor- ough Fair", also: "" },
 
   // ---------- anthems & occasions ----------
-  { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120, also: "" },
-  { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108, also: "" },
-  { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, also: "" },
-  { title: "God Save the King / My Country, 'Tis of Thee", credit: "British traditional", year: "ca. 1740s", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108, also: "" },
-  { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108, also: "" },
-  { title: "When the Saints Go Marching In", credit: "American traditional", year: "ca. 1890s", notes: "1 3 4 5", rhythm: "1 1 1 4", bpm: 144, also: "" },
-  { title: "Take Me Out to the Ball Game", credit: "Albert Von Tilzer", year: "1908", notes: "1 1' 6 5 3 5 2", rhythm: "2 1 1 1 1 3 3", bpm: 204, also: "" },
-  { title: "Bridal Chorus (\"Here Comes the Bride\")", credit: "Richard Wagner", year: "1850", notes: "5, 1 1 1", rhythm: "1 0.75 0.25 2", bpm: 84, also: "" },
+  { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120, lyrics: "Hap- py birth- day to you", also: "" },
+  { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108, lyrics: "O _ say, can you see", also: "" },
+  { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, lyrics: "O beau- ti- ful for spa- cious skies", also: "" },
+  { title: "God Save the King / My Country, 'Tis of Thee", credit: "British traditional", year: "ca. 1740s", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108, lyrics: "God save our gra- cious King", also: "" },
+  { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108, lyrics: "Mine eyes have seen the glo- ry of the com- ing of the Lord", also: "" },
+  { title: "When the Saints Go Marching In", credit: "American traditional", year: "ca. 1890s", notes: "1 3 4 5", rhythm: "1 1 1 4", bpm: 144, lyrics: "Oh when the saints", also: "" },
+  { title: "Take Me Out to the Ball Game", credit: "Albert Von Tilzer", year: "1908", notes: "1 1' 6 5 3 5 2", rhythm: "2 1 1 1 1 3 3", bpm: 204, lyrics: "Take me out to the ball game", also: "" },
+  { title: "Bridal Chorus (\"Here Comes the Bride\")", credit: "Richard Wagner", year: "1850", notes: "5, 1 1 1", rhythm: "1 0.75 0.25 2", lyrics: "Here comes the bride", bpm: 84, also: "" },
   { title: "Taps", credit: "Daniel Butterfield", year: "1862", notes: "5, 5, 1 5, 1 3", rhythm: "0.75 0.25 3 0.75 0.25 3", bpm: 84, also: "" },
   { title: "Westminster Quarters", credit: "Clock chime", year: "1793", notes: "3 1 2 5, 5, 2 3 1", rhythm: "1 1 1 3 1 1 1 3", bpm: 96, also: "" },
   { title: "NBC Chimes", credit: "Broadcast chime", year: "ca. 1927", notes: "5, 3 1", rhythm: "1 1 2", bpm: 108, also: "" },
 
   // ---------- holiday ----------
-  { title: "Jingle Bells (chorus)", credit: "James Lord Pierpont", year: "1857", notes: "3 3 3 3 3 3 3 5 1 2 3", rhythm: "1 1 2 1 1 2 1 1 1.5 0.5 4", bpm: 200, also: "" },
-  { title: "Jingle Bells (beginning)", credit: "James Lord Pierpont", year: "1857", notes: "5, 3 2 1 5,", rhythm: "1 1 1 1 3", bpm: 200, also: "" },
-  { title: "Silent Night", credit: "Franz Xaver Gruber", year: "1818", notes: "5 6 5 3", rhythm: "1.5 0.5 1 3", bpm: 84, also: "" },
-  { title: "Joy to the World", credit: "Watts, Mason, Handel", year: "1839", notes: "1' 7 6 5 4 3 2 1", rhythm: "2 1.5 0.5 3 1 2 2 3", bpm: 200, also: "" },
-  { title: "Deck the Halls", credit: "Welsh traditional", year: "ca. 1790s", notes: "5 4 3 2 1 2 3 1", rhythm: "1.5 0.5 1 1 1 1 1 1", bpm: 144, also: "" },
-  { title: "We Wish You a Merry Christmas", credit: "English traditional", year: "ca. 1800s", notes: "5, 1 1 2 1 7, 6, 6,", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1", bpm: 168, also: "" },
-  { title: "O Christmas Tree", credit: "German traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 3 3", rhythm: "1 0.75 0.25 1.5 0.5 0.75 0.25 1.5", bpm: 108, also: "" },
-  { title: "Hark! The Herald Angels Sing", credit: "Felix Mendelssohn", year: "1840", notes: "5, 1 1 7, 1 3 3 2", rhythm: "1 1 1.5 0.5 1 1 1 1", bpm: 132, also: "" },
-  { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1", also: "" },
-  { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120, also: "" },
-  { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", bpm: 144, also: "" },
+  { title: "Jingle Bells (chorus)", credit: "James Lord Pierpont", year: "1857", notes: "3 3 3 3 3 3 3 5 1 2 3", rhythm: "1 1 2 1 1 2 1 1 1.5 0.5 4", bpm: 200, lyrics: "Jin- gle bells, jin- gle bells, jin- gle all the way", also: "" },
+  { title: "Jingle Bells (beginning)", credit: "James Lord Pierpont", year: "1857", notes: "5, 3 2 1 5,", rhythm: "1 1 1 1 3", bpm: 200, lyrics: "Dash- ing through the snow", also: "" },
+  { title: "Silent Night", credit: "Franz Xaver Gruber", year: "1818", notes: "5 6 5 3", rhythm: "1.5 0.5 1 3", bpm: 84, lyrics: "Si- _ lent night", also: "" },
+  { title: "Joy to the World", credit: "Watts, Mason, Handel", year: "1839", notes: "1' 7 6 5 4 3 2 1", rhythm: "2 1.5 0.5 3 1 2 2 3", bpm: 200, lyrics: "Joy to the world, the Lord is come", also: "" },
+  { title: "Deck the Halls", credit: "Welsh traditional", year: "ca. 1790s", notes: "5 4 3 2 1 2 3 1", rhythm: "1.5 0.5 1 1 1 1 1 1", bpm: 144, lyrics: "Deck the halls with boughs of hol- ly", also: "" },
+  { title: "We Wish You a Merry Christmas", credit: "English traditional", year: "ca. 1800s", notes: "5, 1 1 2 1 7, 6, 6,", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1", bpm: 168, lyrics: "We wish you a mer- ry Christ- mas", also: "" },
+  { title: "O Christmas Tree", credit: "German traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 3 3", rhythm: "1 0.75 0.25 1.5 0.5 0.75 0.25 1.5", bpm: 108, lyrics: "O Christ- mas tree, O Christ- mas tree", also: "" },
+  { title: "Hark! The Herald Angels Sing", credit: "Felix Mendelssohn", year: "1840", notes: "5, 1 1 7, 1 3 3 2", rhythm: "1 1 1.5 0.5 1 1 1 1", bpm: 132, lyrics: "Hark! the her- ald an- gels sing _", also: "" },
+  { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1", lyrics: "A- way in a _ man- ger, no _ crib", also: "" },
+  { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120, lyrics: "O come, all ye faith- ful", also: "" },
+  { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", lyrics: "Ru- dolph the red- nosed rein- deer", bpm: 144, also: "" },
   { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1' 7 6 5", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
-  { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "3 5 1 3 2 4 7, 1", rhythm: "1 1 1 1 1 2 1 3", bpm: 130, also: "" },
-  { title: "Santa Baby", credit: "Eartha Kitt", year: "1953", notes: "", also: "" },   // TODO: needs melody
-  { title: "Have Yourself a Merry Little Christmas (ending)", credit: "Judy Garland", year: "1944", notes: "3 3 4, 6, 1 3 2 1 7, 6, 7,", rhythm: "1 1 1 1 1 0.5 0.5 0.5 0.5 1 1", also: "" },   // TODO: needs melody
+  { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "3 5 1 3 2 4 7, 1", rhythm: "1 1 1 1 1 2 1 3", rhythm: "San- ta Claus is com- ing to town", bpm: 130, also: "" },
+  { title: "Santa Baby", credit: "Eartha Kitt", year: "1953", notes: "5, 1 5, 6,", rhythm: "0.7 0.3 0.7 1", lyrics: "San- ta ba- by", bpm: 86, also: "" },
+  { title: "Have Yourself a Merry Little Christmas (ending)", credit: "Judy Garland", year: "1944", notes: "3 3 4, 6, 1 3 2 1 7, 6, 7,", rhythm: "1 1 1 1 1 0.5 0.5 0.5 0.5 1 1", lyrics: "So have your- self a mer- ry lit- tle Christ- mas", also: "" },   // TODO: needs melody
 
   // ---------- jazz -----------
-  { title: "There Will Never Be Another You", credit: "Harry Warren", year: "1942", notes: "5 8 7 6 5 1 5 4 2 3 1", rhythm: "0.5 0.5 0.5 0.5 0.25 0.5 0.75 0.5 1 1 2", bpm: 90, also: "" },
-  { title: "Nature Boy", credit: "eden ahbez", year: "1948", notes: "5, 5 b3 1", rhythm: "1 1 1 1", bpm: 120, also: "5 b3 1" },
-  { title: "At Last", credit: "Etta James", year: "1960", notes: "5, 1", rhythm: "2 4", bpm: 120, also: "" },
+  { title: "There Will Never Be Another You", credit: "Harry Warren", year: "1942", notes: "5 8 7 6 5 1 5 4 2 3 1", rhythm: "0.5 0.5 0.5 0.5 0.25 0.5 0.75 0.5 1 1 2", lyrics: "There will nev- er ev- er be a- noth- er you", bpm: 90, also: "" },
+  { title: "Nature Boy", credit: "Nat King Cole", year: "1948", notes: "5, 5 b3 1", rhythm: "1 1 1 1", lyrics: "There was a boy", bpm: 120, also: "5 b3 1" },
+  { title: "At Last", credit: "Etta James", year: "1960", notes: "5, 1", rhythm: "2 4", lyrics: "At last!", bpm: 120, also: "" },
 
 
   // ---------- classical ----------
@@ -685,44 +714,44 @@ const SONGS = [
   { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144, also: "" },
   { title: "Canon in D", credit: "Johann Pachelbel", year: "ca. 1680", notes: "5 3 4 5 3 4 5 5, 6, 7, 1 2 3 4 3", rhythm: "1 0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 125, also: "" },
   { title: "Spring, from The Four Seasons", credit: "Antonio Vivaldi", year: "1725", notes: "1 3 3 3 2 1 5", rhythm: "1 1 1 1 0.5 0.5 3", bpm: 170, also: "" },
-  { title: "Hallelujah Chorus", credit: "G. F. Handel", year: "1741", notes: "1 5, 6, 5,", rhythm: "1.5 0.5 0.5 0.5", bpm: 108, also: "" },
+  { title: "Hallelujah Chorus", credit: "G. F. Handel", year: "1741", notes: "1 5, 6, 5,", rhythm: "1.5 0.5 0.5 0.5", lyrics: "Hal- le- lu- jah!", bpm: 108, also: "" },
   { title: "Morning Mood", credit: "Edvard Grieg", year: "1875", notes: "5 3 2 1 2 3 5 3 2 1", also: "" },
   { title: "In the Hall of the Mountain King", credit: "Edvard Grieg", year: "1875", mode: "minor", notes: "1 2 b3 4 5 b3 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 144, also: "" },
   { title: "Can-Can (Galop infernal)", credit: "Jacques Offenbach", year: "1858", notes: "1 1 2 4 3 2 5 5 5 6 3 4 2", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1 0.5 0.5 0.5 0.5 1", also: "" },
-  { title: "Habanera, from Carmen", credit: "Georges Bizet", year: "1875", mode: "minor", notes: "1' 7 b7 b7 b7 6 b6 5", rhythm: "1 1 0.67 0.67 0.67 1 1 1", also: "" },
+  { title: "Habanera, from Carmen", credit: "Georges Bizet", year: "1875", mode: "minor", notes: "1' 7 b7 b7 b7 6 b6 5", rhythm: "1 1 0.67 0.67 0.67 1 1 1", lyrics: "L'a- mour est un oi- seau re- belle", also: "" },
 
   // ---------- stage, screen & games ----------
-  { title: "Over the Rainbow", credit: "Harold Arlen", year: "1939", notes: "1 1' 7 5 6 7 1'", rhythm: "2 2 1 0.5 0.5 1 1", bpm: 96, also: "" },
-  { title: "Edelweiss", credit: "Richard Rodgers", year: "1959", notes: "3 5 2' 1' 5 4", rhythm: "2 1 3 2 1 3", bpm: 132, also: "" },
-  { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", bpm: 144, also: "" },
-  { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1 1 5, 1 1 2 1", rhythm: "1 1 1 1 1 1 1 1 1 1 2", bpm: 192, also: "" },
-  { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5", rhythm: "1 1 3", also: "" },
+  { title: "Over the Rainbow", credit: "Harold Arlen", year: "1939", notes: "1 1' 7 5 6 7 1'", rhythm: "2 2 1 0.5 0.5 1 1", lyrics: "Some- where o- ver the rain- bow", bpm: 96, also: "" },
+  { title: "Edelweiss", credit: "Richard Rodgers", year: "1959", notes: "3 5 2' 1' 5 4", rhythm: "2 1 3 2 1 3", lyrics: "E- del- weiss, E- del- weiss", bpm: 132, also: "" },
+  { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", lyrics: "Do, a deer, a fe- male deer", bpm: 144, also: "" },
+  { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1 1 5, 1 1 2 1", rhythm: "1 1 1 1 1 1 1 1 1 1 2", lyrics: "Rain- drops on ro- ses and whis- kers on kit- tens", bpm: 192, also: "" },
+  { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5", rhythm: "1 1 3", lyrics: "Ma- ri- a!", also: "" },
   { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120, also: "1 5 4 3 2 8", },
   { title: "The Imperial March", credit: "John Williams", year: "1980", mode: "minor", notes: "1 1 1 b6, b3 1 b6, b3 1", rhythm: "1 1 1 0.75 0.25 1 0.75 0.25 2", bpm: 120, also: "" },
-  { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1 7, 1 7, 1 7, 1 7, 1", rhythm: "1 3 1 3 1 1 1 1 1 3", bpm: 170, also: "" },
+  { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1 7, 1 7, 1 7, 1 7, 1", rhythm: "1 3 1 3 1 1 1 1 1 3", lyrics: "🦈 _ _ _ _ _ _ _ _ _", bpm: 170, also: "" },
   { title: "Close Encounters of the Third Kind (motif)", credit: "John Williams", year: "1977", notes: "2 3 1 1, 5,", rhythm: "1 1 1 1 2", bpm: 96, also: "" },
   { title: "Hedwig's Theme", credit: "John Williams", year: "2001", mode: "minor", notes: "5, 1 b3 2 1 5 4 2", rhythm: "1 1.5 0.5 1 2 1 3 3", bpm: 216, also: "" },
-  { title: "The Simpsons Theme", credit: "Danny Elfman", year: "1989", notes: "1 #4 5", rhythm: "1 2 3", bpm: 80, also: "" },
+  { title: "The Simpsons Theme", credit: "Danny Elfman", year: "1989", notes: "1 #4 5", rhythm: "1 2 3", lyrics: "The Simp- sons", bpm: 80, also: "" },
   { title: "Super Mario Bros. Theme", credit: "Koji Kondo", year: "1985", notes: "3 3 3 1 3 5 5,", rhythm: "0.5 1 1 0.5 1 2 2", bpm: 216, also: "" },
   { title: "Tetris Theme (Korobeiniki)", credit: "Russian traditional", year: "ca. 1860s", mode: "minor", notes: "5 2 b3 4 b3 2 1 1 b3 5 4 b3 2", rhythm: "1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1.5", bpm: 168, also: "" },
-  { title: "Somewhere", credit: "West Side Story", year: "1957", notes: "5, 4 3 1 6,", rhythm: "2 2 1.5 0.5 2", bpm: 120, also: "" },
+  { title: "Somewhere", credit: "West Side Story", year: "1957", notes: "5, 4 3 1 6,", rhythm: "2 2 1.5 0.5 2", lyrics: "There's a place for us", bpm: 120, also: "" },
 
 
   // ---------- popular ----------
-  { title: "Yesterday", credit: "The Beatles", year: "1965", notes: "2 1 1 3 #4 #5 6 7 1' 7 6 6", rhythm: "0.5 0.25 3.75 0.5 0.5 0.25 0.75 0.5 0.5 1 0.5 2", bpm: 108, also: "" },
-  { title: "Hey Jude", credit: "The Beatles", year: "1968", notes: "5 3 3 5 6 2", rhythm: "1 2.5 0.5 0.5 0.5 3", bpm: 90, also: "" },
-  { title: "Home for a Rest", credit: "Spirit of the West", year: "1990", notes: "5 5 1 1 1 1 1 6 5 4 5", rhythm: "1 1 1 1 1 1 1 1 1 1 1", bpm: 200, also: "" },
-  { title: "Mystery of Love", credit: "Sufjan Stevens", year: "2017", notes: "3 1 3 2 1 6, 5,", rhythm: "1 1 0.5 0.25 0.5 0.75 3", bpm: 120, also: "" },
-  { title: "Everywhere", credit: "Michelle Branch", year: "2001", notes: "1 1 8 7 5 3 3 2", rhythm: "0.25 0.75 1 1 1 0.75 0.25 1", bpm: 120, also: "" },
-  { title: "What Dreams Are Made Of", credit: "Hilary Duff", year: "2003", notes: "3 1 3 2 3", rhythm: "0.5 1.5 0.5 1 2", bpm: 120, also: "" },
-  { title: "Apologize", credit: "OneRepublic", year: "2007", notes: "5 5 6, 1 6, 1 6,", rhythm: "0.5 1 0.5 0.5 0.5 0.5 2", bpm: 120, also: "" },
-  { title: "A Case of You", credit: "Joni Mitchell", year: "1971", notes: "3 5, 3 5, 3 2 2 1 1", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 120, also: "" },
-  { title: "The Only Exception", credit: "Paramore", year: "2009", notes: "3 5, 5, 1 2 3 3 2", rhythm: "3 2.7 0.3 1 0.7 1 1 2", bpm: 120, also: "" },
+  { title: "Yesterday", credit: "The Beatles", year: "1965", notes: "2 1 1 3 #4 #5 6 7 1' 7 6 6", rhythm: "0.5 0.25 3.75 0.5 0.5 0.25 0.75 0.5 0.5 1 0.5 2", lyrics: "Yes- ter- day, all my trou- bles seemed so far a- way", bpm: 108, also: "" },
+  { title: "Hey Jude", credit: "The Beatles", year: "1968", notes: "5 3 3 5 6 2", rhythm: "1 2.5 0.5 0.5 0.5 3", lyrics: "Hey Jude, don't make it bad", bpm: 90, also: "" },
+  { title: "Home for a Rest", credit: "Spirit of the West", year: "1990", notes: "5 5 1 1 1 1 1 6 5 4 5", rhythm: "1 1 1 1 1 1 1 1 1 1 1", lyrics: "You'll have to ex- cuse me I'm not at my best", bpm: 200, also: "" },
+  { title: "Mystery of Love", credit: "Sufjan Stevens", year: "2017", notes: "3 1 3 2 1 6, 5,", rhythm: "1 1 0.5 0.25 0.5 0.75 3", lyrics: "Oh, to see with- out my eyes", bpm: 120, also: "" },
+  { title: "Everywhere", credit: "Michelle Branch", year: "2001", notes: "1 1 8 7 5 3 3 2", rhythm: "0.25 0.75 1 1 1 0.75 0.25 1", lyrics: "'cause you're ev- ery- where to me _", bpm: 120, also: "" },
+  { title: "What Dreams Are Made Of", credit: "Hilary Duff", year: "2003", notes: "3 1 3 2 3", rhythm: "0.5 1.5 0.5 1 2", lyrics: "Hey now, hey now _", bpm: 120, also: "" },
+  { title: "Apologize", credit: "OneRepublic", year: "2007", notes: "5 5 6, 1 6, 1 6,", rhythm: "0.5 1 0.5 0.5 0.5 0.5 2", lyrics: "too late to apol- o- gize _", bpm: 120, also: "" },
+  { title: "A Case of You", credit: "Joni Mitchell", year: "1971", notes: "3 5, 3 5, 3 2 2 1 1", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", lyrics: "I could drink a case _ of _ you", bpm: 120, also: "" },
+  { title: "The Only Exception", credit: "Paramore", year: "2009", notes: "3 5, 5, 1 2 3 3 2", rhythm: "3 2.7 0.3 1 0.7 1 1 2", lyrics: "You are the on- ly ex- cep- tion", bpm: 120, also: "" },
 
 
   // 1960s
-  { title: "Fly Me to the Moon", credit: "Frank Sinatra", year: "1964", notes: "1' 7 6 5 4", rhythm: "1 1 1 0.7 3", bpm: 120, also: "" },
-  { title: "The Sound of Silence", credit: "Simon & Garfunkel", year: "1965", mode: "minor", notes: "1 1 b3 b3 5 5 4", rhythm: "0.25 0.75 0.5 0.5 0.5 0.5 2", also: "" },
+  { title: "Fly Me to the Moon", credit: "Frank Sinatra", year: "1964", notes: "1' 7 6 5 4", rhythm: "1 1 1 0.7 3", lyrics: "Fly me to the moon", bpm: 120, also: "" },
+  { title: "The Sound of Silence", credit: "Simon & Garfunkel", year: "1965", mode: "minor", notes: "1 1 b3 b3 5 5 4", rhythm: "0.25 0.75 0.5 0.5 0.5 0.5 2", lyrics: "Hel- lo dark- ness my old friend", also: "" },
   { title: "The Pink Panther Theme", credit: "Henry Mancini", year: "1963", mode: "minor", notes: "7, 1 2 b3 7, 1 2 b3 b6 5", rhythm: "0.3 1.7 0.3 1.7 0.3 0.7 0.3 0.7 0.3 1", bpm: 110, also: "" },
   { title: "Mission: Impossible Theme", credit: "Lalo Schifrin", year: "1966", mode: "minor", notes: "1 1 b3 4 1 1 b7, 7,", rhythm: "1.5 1.5 1 1 1.5 1.5 1 1", bpm: 170, also: "" },
 
@@ -732,8 +761,8 @@ const SONGS = [
   // 1980s
   { title: "Under Pressure", credit: "Queen & David Bowie", year: "1981", notes: "1 1 1 1 1 5,", rhythm: "1 1 1 0.5 0.5 1 2", bpm: 300, also: "" },
   { title: "Eye of the Tiger (riff)", credit: "Survivor", year: "1982", mode: "minor", notes: "1 1 b7, 1 1 b7, 1 1 b7, b6,", rhythm: "2 0.7 0.7 2.7 0.7 0.7 2.7 0.7 0.7 3", also: "" },
-  { title: "Billie Jean", credit: "Michael Jackson", year: "1983", mode: "minor", notes: "1 1 b7, 5, 1 1 b7, 5,", rhythm: "0.5 0.5 1 1 0.5 1 1 0.5", also: "" },
-  { title: "Take On Me (chorus)", credit: "a-ha", year: "1985", notes: "1 7 1' 1 5 6", rhythm: "1 1 2 1 1 2", bpm: 60, also: "" },
+  { title: "Billie Jean", credit: "Michael Jackson", year: "1983", mode: "minor", notes: "1 1 b7, 5, 1 1 b7, 5,", rhythm: "0.5 0.5 1 1 0.5 1 1 0.5", lyrics: "Bil- lie Jean is not my lov- er", also: "" },
+  { title: "Take On Me (chorus)", credit: "a-ha", year: "1985", notes: "1 7 1' 1 5 6", rhythm: "1 1 2 1 1 2", bpm: 60, lyrics: "Take on me", also: "" },
   { title: "The Final Countdown", credit: "Europe", year: "1986", mode: "minor", notes: "5 4 5 1 b6 5 b6 5 4", rhythm: "0.25 0.25 1 2.5 0.25 0.25 0.5 0.5 2", also: "" },
   { title: "Sweet Child o' Mine (riff)", credit: "Guns N' Roses", year: "1987", notes: "1 1' 5 4 4' 5 3' 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 125, also: "" },
 
@@ -741,96 +770,95 @@ const SONGS = [
   { title: "Smells Like Teen Spirit (riff)", credit: "Nirvana", year: "1991", mode: "minor", notes: "1 1 4 4 b3 b3 b6 b6", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", also: "" },
 
   // 2000s
-  { title: "Clocks (piano riff)", credit: "Coldplay", year: "2002", notes: "1' 5 3 1' 5 3 1' 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 130, also: "" },
+  { title: "Clocks (piano riff)", credit: "Coldplay", year: "2002", notes: "1' 5 3 1' 5 3 1' 5 ", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 130, also: "" },
   { title: "Seven Nation Army", credit: "The White Stripes", year: "2003", mode: "minor", notes: "1 1 b3 1 b7, b6, 5,", rhythm: "1.5 0.5 0.75 0.75 0.5 2 2", bpm: 124, also: "" },
   // ---------- ✍️ waiting for melodies ----------
   // These don't show on the page until their notes are filled in.
   // Add the opening notes (and mode: "minor" if needed); rhythm and bpm are optional.
 
   // 1950s
-  { title: "Willow Weep for Me", credit: "Billie Holiday", year: "1954", notes: "8 1 2 4 2", rhythm: "0.3 1 0.7 0.3 1", bpm: 70, also: "" },   
-  { title: "El Paso", credit: "Marty Robbins", year: "1959", notes: "1 1 3 5 3 1 2 2 4 6 4", rhythm: "1 1 0.5 1.5 1 1 1 0.5 1.5 0.5 1.5", bpm: 200, also: "" },  
+  { title: "Willow Weep for Me", credit: "Billie Holiday", year: "1954", notes: "8 1 2 4 2", rhythm: "0.3 1 0.7 0.3 1", bpm: 70, lyrics: "Wil- low weep for me", also: "" },   
+  { title: "El Paso", credit: "Marty Robbins", year: "1959", notes: "1 1 3 5 3 1 2 2 4 6 4", rhythm: "1 1 0.5 1.5 1 1 1 0.5 1.5 0.5 1.5", lyrics: "Down in the west Tex- as town of El Pa- so", bpm: 200, also: "" },  
   { title: "What Is It", credit: "Oscar Peterson", year: "1957", notes: "8 8 6 8 8 6 8", rhythm: "1.7 1.3 1 1.7 1.3 0.5 2", also: "" },
 
   // 1960s
-  { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", also: "" },
-  { title: "Moon River", credit: "Henry Mancini", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", also: "" },
-  { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6", also: "" },
-  { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "8 7 6 5 4 5 4 3 2 3 2 1", rhythm: "0.5 0.5 0.5 1 1 0.75 0.25 0.75 0.25 0.25 0.25 1", also: "" },
+  { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", lyrics: "Wise men say, on- ly fools rush in", also: "" },
+  { title: "Moon River", credit: "Henry Mancini", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", lyrics: "Moon ri- ver", also: "" },
+  { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6", lyrics: "When the night has come and the land is dark", also: "" },
+  { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "8 7 6 5 4 5 4 3 2 3 2 1", rhythm: "0.5 0.5 0.5 1 1 0.75 0.25 0.75 0.25 0.25 0.25 1", lyrics: "I wan- na hold your hand _ _ _ _ _ _", also: "" },
   { title: "My Girl", credit: "The Temptations", year: "1964", notes: "", also: "" },   // TODO: needs melody
   { title: "Unchained Melody", credit: "The Righteous Brothers", year: "1965", notes: "", also: "" },   // TODO: needs melody
   { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "", also: "" },   // TODO: needs melody
-  { title: "What the World Needs Now Is Love", credit: "Jackie DeShannon", year: "1965", notes: "1 1 5 5 3", rhythm: "0.7 0.3 2 1 3", also: "" },
-  { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "5, 7, 1 1 5", rhythm: "0.7 0.3 1.7 0.3 2", bpm: 70, also: "" },
-  { title: "Ain't No Mountain High Enough", credit: "Marvin Gaye & Tammi Terrell", year: "1967", notes: "6 6 6 6 5 5 3", rhythm: "1 1 1 0.5 1.5 0.5 2", also: "" },
-  { title: "Blackbird", credit: "The Beatles", year: "1968", notes: "1 1 1 1 1 1 1 5 5", rhythm: "0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.75 2", also: "" },
-  { title: "Hooked on a Feeling", credit: "B.J. Thomas", year: "1968", notes: "4 4 4 4 3 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", also: "" },
+  { title: "What the World Needs Now Is Love", credit: "Jackie DeShannon", year: "1965", notes: "1 1 5 5 3", rhythm: "0.7 0.3 2 1 3", lyrics: "What the world needs now", also: "" },
+  { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "5, 7, 1 1 5", rhythm: "0.7 0.3 1.7 0.3 2", lyrics: "I see trees of green", bpm: 70, also: "" },
+  { title: "Ain't No Mountain High Enough", credit: "Marvin Gaye & Tammi Terrell", year: "1967", notes: "6 6 6 6 5 5 3", rhythm: "1 1 1 0.5 1.5 0.5 2", lyrics: "Ain't no moun- tain high e- nough", also: "" },
+  { title: "Blackbird", credit: "The Beatles", year: "1968", notes: "1 1 1 1 1 1 1 5 5", rhythm: "0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.75 2", lyrics: "Black- bird sing- in' in the dead of night", also: "" },
+  { title: "Hooked on a Feeling", credit: "B.J. Thomas", year: "1968", notes: "4 4 4 4 3 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", lyrics: "Hooked on a feel- _ in'", also: "" },
   { title: "In My Life", credit: "The Beatles", year: "1968", notes: "3 1' 3 4 5 7", rhythm: "1 1 0.5 0.5 0.5 3", also: "" },  
-  { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "3 2 3 1", rhythm: "0.5 1 1 2", also: "" },
-  { title: "Come Together", credit: "The Beatles", year: "1969", notes: "1 1 5 3", rhythm: "0.5 0.25 0.5 2", also: "" }, 
-  { title: "Oh! Darling", credit: "The Beatles", year: "1969", notes: "6 8 6 5", rhythm: "2 1 2 1", bpm: 160, also: "" },
-  { title: "River Man", credit: "Nick Drake", year: "1969", notes: "5 4 5 4 5 8 8", rhythm: "0.3 0.3 0.5 0.5 0.7 0.3 3", also: "" },
+  { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "3 2 3 1", rhythm: "0.5 1 1 2", lyrics: "here comes the sun", also: "" },
+  { title: "Come Together", credit: "The Beatles", year: "1969", notes: "1 1 5 3", rhythm: "0.5 0.25 0.5 2", lyrics: "Come to- geth- er", also: "" }, 
+  { title: "Oh! Darling", credit: "The Beatles", year: "1969", notes: "6 8 6 5", rhythm: "2 1 2 1", lyrics: "Oh, _ dar- ling", bpm: 160, also: "" },
+  { title: "River Man", credit: "Nick Drake", year: "1969", notes: "5 4 5 4 5 8 8", rhythm: "0.3 0.3 0.5 0.5 0.7 0.3 3", lyrics: "Gon- na see the riv- er man", also: "" },
 
   // 1970s
-  { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "5 5 5 5 6 3 5 5 8 9", also: "", rhythm: "0.5 0.5 1 0.5 1 1 1.5 1 0.5 1.5", bpm: 150 },
-  { title: "Bridge Over Troubled Water", credit: "Simon & Garfunkel", year: "1970", notes: "", also: "" },
-  { title: "Imagine", credit: "John Lennon", year: "1971", notes: "6, 1 6, 1 3 3 2", rhythm: "0.5 1 0.5 2.5 1 1 2", also: "" },
-  { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "3 2 1", also: "" },
-  { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", also: "" },
-  { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", also: "" },
-  { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", also: "" },
-  { title: "Voulez-Vous", credit: "ABBA", year: "1979", notes: "1 b3 4", rhythm: "1 1 3", also: "" },
-  { title: "Gimme! Gimme! Gimme! (A Man After Midnight)", credit: "ABBA", year: "1979", notes: "1 b3 1 b3 1 b3 5 4 b3 1 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1 2", also: "" },
+  { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "5 5 5 5 6 3 5 5 8 9", also: "", rhythm: "0.5 0.5 1 0.5 1 1 1.5 1 0.5 1.5", lyrics: "When I find my- self in times of trou- ble", bpm: 150 },
+  { title: "Imagine", credit: "John Lennon", year: "1971", notes: "6, 1 6, 1 3 3 2", rhythm: "0.5 1 0.5 2.5 1 1 2", lyrics: "I- mag- ine all the peo- ple", also: "" },
+  { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "3 2 1", lyrics: "Lean on me", also: "" },
+  { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", lyrics: "Strum- ming my pain with his fing- ers", also: "" },
+  { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", lyrics: "Jo- lene, Jo- lene, Jo- lene, Jo- lene!", also: "" },
+  { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", lyrics: "Danc- ing queen", also: "" },
+  { title: "Voulez-Vous", credit: "ABBA", year: "1979", notes: "1 b3 4", rhythm: "1 1 3", lyrics: "Vou- lez vous", also: "" },
+  { title: "Gimme! Gimme! Gimme! (A Man After Midnight)", credit: "ABBA", year: "1979", notes: "1 b3 1 b3 1 b3 5 4 b3 1 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1 2", lyrics: "Gim- me gim- me gim- me a man af- ter mid- night", also: "" },
 
   // 1980s
   { title: "YYZ", credit: "Rush", year: "1981", notes: "8 #4 8 8 8 #4 8 8", rhythm: "1 0.5 1 1 1 0.5 1 1", bpm: 170, also: "" }, 
-  { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "3 1 2 2 3", rhythm: "0.5 0.5 0.5 1 1", also: "" },
-  { title: "You Make My Dreams", credit: "Daryl Hall & John Oates", year: "1981", notes: "6, 1 3 3 1 6, 5,", rhythm: "1 1 1 1.7 2 1 1", also: "" },
-  { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "b3 1", rhythm: "0.5 0.5", also: "" },
-  { title: "Sweet Dreams (Are Made of This)", credit: "Eurythmics", year: "1983", notes: "b3 b3 1 b3 b3 b3 2", rhythm: "1 1 1 0.5 1 0.5 2", also: "" },
-  { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "3 5 6 3 5 6 3 1", rhythm: "0.7 1 2 0.3 1 0.7 1 1", also: "" },
-  { title: "I Wanna Dance with Somebody (Who Loves Me)", credit: "Whitney Houston", year: "1987", notes: "3 3 3 3 1 1 1 2", rhythm: "0.5 0.25 0.25 1 0.5 0.5 1 2", also: "" },
+  { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "3 1 2 2 3", rhythm: "0.5 0.5 0.5 1 1", lyrics: "Just a small town girl", also: "" },
+  { title: "You Make My Dreams", credit: "Daryl Hall & John Oates", year: "1981", notes: "6, 1 3 3 1 6, 5,", rhythm: "1 1 1 1.7 2 1 1", lyrics: "You make my dreams come true _", also: "" },
+  { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "b3 1", rhythm: "0.5 0.5", lyrics: "beat it", also: "" },
+  { title: "Sweet Dreams (Are Made of This)", credit: "Eurythmics", year: "1983", notes: "b3 b3 1 b3 b3 b3 2", rhythm: "1 1 1 0.5 1 0.5 2", lyrics: "Sweet dreams are made of this", also: "" },
+  { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "3 5 6 3 5 6 3 1", rhythm: "0.7 1 2 0.3 1 0.7 1 1", lyrics: "Wake me up be- fore you go- go", also: "" },
+  { title: "I Wanna Dance with Somebody (Who Loves Me)", credit: "Whitney Houston", year: "1987", notes: "3 3 3 3 1 1 1 2", rhythm: "0.5 0.25 0.25 1 0.5 0.5 1 2", lyrics: "I wan- na dance with some- bo- dy", also: "" },
   { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "", also: "" },   // TODO: needs melody
 
   // 1990s
   { title: "Vogue", credit: "Madonna", year: "1990", notes: "", also: "" },   // TODO: needs melody
-  { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", also: "" },
-  { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", also: "" },  
-  { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25", bpm: 80, also: "" }, 
-  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", also: "" }, 
-  { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", also: "" },
-  { title: "Believe", credit: "Cher", year: "1998", notes: "5, 5, 5, 3 2 2 2 2 1 2", rhythm: "0.5 0.5 1 0.5 1 0.5 1 0.5 0.5 1", also: "" },
+  { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", lyrics: "I'm a creep, I'm a weird- o", also: "" },
+  { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", lyrics: "Do you have to let it ling- er", also: "" },  
+  { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25",lyrics: "Liv- ing in a gang- sta's pa- _ ra- dise", bpm: 80, also: "" }, 
+  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", lyrics: "I'm all out of faith, this is how I feel _", also: "" }, 
+  { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", lyrics: "Hit me ba- by one more time", also: "" },
+  { title: "Believe", credit: "Cher", year: "1998", notes: "5, 5, 5, 3 2 2 2 2 1 2", rhythm: "0.5 0.5 1 0.5 1 0.5 1 0.5 0.5 1", lyrics: "Do you be- lieve in life af- ter love?", also: "" },
 
   // 2000s
-  { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "5 1 7, 1 2 1", rhythm: "1 1 0.5 0.5 0.5 1", also: "" },
-  { title: "Teenage Dirtbag", credit: "Wheatus", year: "2000", notes: "1 3 3 2 1 3 7, 7, 1", rhythm: "0.5 0.5 0.5 1 1 1 1 1 1", also: "" },
-  { title: "A Thousand Miles", credit: "Vanessa Carlton", year: "2002", notes: "5 5 5 5 2 2", rhythm: "0.25 0.25 0.25 0.5 0.5 1", also: "" },
-  { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "3 2 1 2 1", rhythm: "1 1 1 2 2", also: "" },
+  { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "5 1 7, 1 2 1", rhythm: "1 1 0.5 0.5 0.5 1", lyrics: "Oops! I did it a- gain", also: "" },
+  { title: "Teenage Dirtbag", credit: "Wheatus", year: "2000", notes: "1 3 3 2 1 3 7, 7, 1", rhythm: "0.5 0.5 0.5 1 1 1 1 1 1", lyrics: "I'm just a teen- age dirt- bag ba- by", also: "" },
+  { title: "A Thousand Miles", credit: "Vanessa Carlton", year: "2002", notes: "5 5 5 5 2 2", rhythm: "0.25 0.25 0.25 0.5 0.5 1", lyrics: "Mak- ing my way down- town", also: "" },
+  { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "3 2 1 2 1", rhythm: "1 1 1 2 2", lyrics: "I'm Mis- ter Bright- side", also: "" },
   { title: "Toxic", credit: "Britney Spears", year: "2003", notes: "5 2 b3 2 1", rhythm: "1 1 0.5 0.5 1", also: "" },
-  { title: "I Believe in a Thing Called Love", credit: "The Darkness", year: "2003", notes: "1 1 1 1 1 1 1 1 6 6 6 6 6 5 5 5 5 3", rhythm: "0.25 0.25 0.5 0.25 0.25 0.5 0.5 1.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 1", also: "" },
-  { title: "Halo", credit: "Beyoncé", year: "2008", notes: "8 8 8 8 8 8 8 5 4 3", rhythm: "0.25 0.25 0.25 0.25 0.5 0.25 0.5 0.25 0.25 1", bpm: 90, also: "" },
+  { title: "I Believe in a Thing Called Love", credit: "The Darkness", year: "2003", notes: "1 1 1 1 1 1 1 1 6 6 6 6 6 5 5 5 5 3", rhythm: "0.25 0.25 0.5 0.25 0.25 0.5 0.5 1.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 1", lyrics: "I be- lieve in a thing called love, just list- ten to the rhy- thm of my heart", also: "" },
+  { title: "Halo", credit: "Beyoncé", year: "2008", notes: "8 8 8 8 8 8 8 5 4 3", rhythm: "0.25 0.25 0.25 0.25 0.5 0.25 0.5 0.25 0.25 1", lyrics: "Ba- by I can see your ha- lo _ _", bpm: 90, also: "" },
 
   // 2010s
-  { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "b7 5 b7 5 1' 2' b7", rhythm: "0.5 0.5 0.5 0.5 3 0.5 3", also: "b7 5 1'" },
-  { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "1 3, 5, 1 5,", rhythm: "1 0.25 0.5 0.75 0.5", also: "" },
-  { title: "Love On Top", credit: "Beyoncé", year: "2011", notes: "8 6 8 6 8", rhythm: "0.75 0.5 0.5 0.5 2", also: "" },
-  { title: "Royals", credit: "Lorde", year: "2013", notes: "5 3", bpm: 60, also: "" },
-  { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "6 7 1' 5 5 2'", rhythm: "0.5 0.5 3 0.5 0.5 3.5", also: "" },
-  { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "2 3 1", rhythm: "0.5 0.5 2", also: "" },
+  { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "b7 5 b7 5 1' 2' b7", rhythm: "0.5 0.5 0.5 0.5 3 0.5 3", lyrics: "Roll- ing in the deep _ _", also: "b7 5 1'" },
+  { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "1 3, 5, 1 5,", rhythm: "1 0.25 0.5 0.75 0.5", lyrics: "Hey, I just met you", also: "" },
+  { title: "Love On Top", credit: "Beyoncé", year: "2011", notes: "8 6 8 6 8", rhythm: "0.75 0.5 0.5 0.5 2", lyrics: "You're the one I want", also: "" },
+  { title: "Royals", credit: "Lorde", year: "2013", notes: "5 3", bpm: 60, lyrics: "roy- als", also: "" },
+  { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "6 7 1' 5 5 2'", rhythm: "0.5 0.5 3 0.5 0.5 3.5", lyrics: "let it go, let it go", also: "" },
+  { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "2 3 1", rhythm: "0.5 0.5 2", lyrics: "shake it off", also: "" },
   { title: "Uptown Funk (riff)", credit: "Mark Ronson ft. Bruno Mars", year: "2014", notes: "1 1 4 b3 1 4 b3 b7, 1", rhythm: "3.5 0.5 0.75 0.75 0.5 0.75 0.75 0.5 2", also: "1 4 b3" },
-  { title: "Tú Sí Sabes Quererme", credit: "Natalia Lafourcade", year: "2017", notes: "3 3 3 3 5 5 4", rhythm: "0.25 0.25 0.25 0.5 0.5 0.25 1", bpm: 60, also: "" },
-  { title: "Don't Bother Calling", credit: "Moses Sumney", year: "2017", notes: "8 7 5 3 5 3 8 7 7", rhythm: "0.25 0.25 0.25 0.5 0.5 0.5 0.5 0.5 2", bpm: 60, also: "" },
+  { title: "Tú Sí Sabes Quererme", credit: "Natalia Lafourcade", year: "2017", notes: "3 3 3 3 5 5 4", rhythm: "0.25 0.25 0.25 0.5 0.5 0.25 1", lyrics: "Cor- a- zón, tú sí sab- es", bpm: 60, also: "" },
+  { title: "Don't Bother Calling", credit: "Moses Sumney", year: "2017", notes: "8 7 5 3 5 3 8 7 7", rhythm: "0.25 0.25 0.25 0.5 0.5 0.5 0.5 0.5 2", lyrics: "Don't _ bo- ther call- ing I'll call you", bpm: 60, also: "" },
 
   // 2020s
   { title: "Blinding Lights (riff)", credit: "The Weeknd", year: "2019", notes: "1 1 b7, 1 2 5, b7,", rhythm: "2 1.5 0.5 0.5 1 1 2", bpm: 170, also: "" },
-  { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "6, 1 2 2 1", rhythm: "0.5 0.5 1 0.25 0.75", bpm: 100, also: "" },
-  { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "3 5 5 4 3 2 2 1", rhythm: "0.5 1 1.5 0.5 1.5 0.5 1 1", also: "" },
-  { title: "vampire (beginning)", credit: "Olivia Rodrigo", year: "2021", notes: "5 3 5 3 5 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", also: "" },
-  { title: "vampire (chorus)", credit: "Olivia Rodrigo", year: "2021", notes: "3 2 1 6, 3 3 3", rhythm: "0.5 1.5 1 1 1 1 1", also: "6, 3" },
-  { title: "Anti-Hero (chorus)", credit: "Taylor Swift", year: "2022", notes: "1 3 3", rhythm: "0.5 2 2", also: "" },
-  { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "b3 b3 b3 5 1 1 1 2 b7, b7, b7, 2 b3 2 1", rhythm: "0.25 0.25 0.5 1 0.25 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
-  { title: "Sky Above", credit: "Jacob Collier", year: "2019", notes: "5 3 5", rhythm: "2.7 0.3 3", also: "" },
-  { title: "Musician", credit: "Porter Robinson", year: "2021", notes: "", also: "" },   // TODO: needs melody
+  { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "6, 1 2 2 1", rhythm: "0.5 0.5 1 0.25 0.75", lyrics: "Tastes like straw- ber- ries", bpm: 100, also: "" },
+  { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "3 5 5 4 3 2 2 1", rhythm: "0.5 1 1.5 0.5 1.5 0.5 1 1", lyrics: "got my dri- vers li- cense last week", also: "" },
+  { title: "vampire (beginning)", credit: "Olivia Rodrigo", year: "2021", notes: "5 3 5 3 5 3 5 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", lyrics: "hate to give the sat- is- fac- tion", also: "" },
+  { title: "vampire (chorus)", credit: "Olivia Rodrigo", year: "2021", notes: "3 2 1 6, 3 3 3", rhythm: "0.5 1.5 1 1 1 1 1", lyrics: "I've made some real big mis- takes", also: "6, 3" },
+  { title: "Anti-Hero (chorus)", credit: "Taylor Swift", year: "2022", notes: "1 3 3", rhythm: "0.5 2 2", lyrics: "It's me, hi", also: "" },
+  { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "b3 b3 b3 5 1 1 1 2 b7, b7, 2 b3 2 1", rhythm: "0.25 0.25 0.5 1 0.25 0.25 0.5 1 0.5 0.5 0.5 0.5 0.5 1", lyrics: "say you can't sleep, ba- by I know, that's that me es- press- o", also: "" },
+  { title: "Sky Above", credit: "Jacob Collier", year: "2019", notes: "5 3 5", rhythm: "2.7 0.3 3", lyrics: "sky a- bove", also: "" },
+  { title: "Musician", credit: "Porter Robinson", year: "2021", notes: "1 1 6 5 5 5 4 3 3 2 2 1", rhythm: "0.5 1 1 0.5 2 1 0.5 1 1 1 1.5 2", lyrics: "Oh it's call- _ ing, I just can't stop I'm sor- ry", also: "" },   // TODO: needs melody
 ];
 
 /* ---------- parsing ---------- */
@@ -1004,6 +1032,7 @@ let audio;
 let playing = [];   // notes currently sounding or scheduled, so a new playback can cut them off
 
 function stopPlayback() {
+  clearLyrics();
   if (!audio) return;
   const now = audio.currentTime;
   for (const { osc, gain } of playing) {
@@ -1026,6 +1055,8 @@ function playNotes(notes, rhythm, bpm = 120) {
   stopPlayback();   // a new playback interrupts whatever was playing
   const tonic = 261.63; // C4
   let t = audio.currentTime + 0.05;
+  const t0 = audio.currentTime;
+  const starts = [];   // when each note begins, so lyrics can follow along
   let prev = null;
   // if any typed note has an octave mark, play every note in its marked octave
   const hasOctaves = notes.some(n => n.fromInput && n.oct !== 0);
@@ -1053,8 +1084,37 @@ function playNotes(notes, rhythm, bpm = 120) {
     const entry = { osc, gain };
     playing.push(entry);
     osc.onended = () => { playing = playing.filter(p => p !== entry); };
+    starts.push(t - t0);
     t += dur;
   }
+  return starts;
+}
+
+/* ---------- lyrics: one syllable at a time, right beside the song's numbers ---------- */
+let lyricTimers = [];
+function clearLyrics() {
+  lyricTimers.forEach(clearTimeout);
+  lyricTimers = [];
+  document.querySelectorAll('.lyric-now').forEach(el => el.remove());
+}
+function showLyrics(li, song, starts) {
+  if (!song.lyrics || !starts) return;
+  const syllables = song.lyrics.trim().split(/\s+/);
+  if (syllables.length !== song.parsed.length) {
+    console.warn(`"${song.title}": ${syllables.length} lyric syllables for ${song.parsed.length} notes`);
+  }
+  const spot = document.createElement('span');
+  spot.className = 'lyric-now';
+  spot.setAttribute('aria-live', 'off');
+  li.querySelector('.degrees').append(spot);
+  syllables.forEach((syl, i) => {
+    if (syl === '_' || i >= starts.length) return;   // "_" keeps the previous syllable showing
+    lyricTimers.push(setTimeout(() => { spot.textContent = syl; }, starts[i] * 1000));
+  });
+  // fade away a moment after the last note
+  const last = starts[Math.min(syllables.length, starts.length) - 1] || 0;
+  lyricTimers.push(setTimeout(() => spot.classList.add('done'), (last + 1.2) * 1000));
+  lyricTimers.push(setTimeout(() => spot.remove(), (last + 1.6) * 1000));
 }
 
 /* ---------- page ---------- */
@@ -1292,7 +1352,10 @@ function renderList(list, query, description) {
     const title = li.querySelector('.song-title');
     title.textContent = song.title;
     li.querySelector('.song-credit').textContent = song.year ? `${song.credit} · ${song.year}` : song.credit;
-    li.querySelector('.song-play').addEventListener('click', () => playNotes(song.parsed, song.rhythm, song.bpm));
+    li.querySelector('.song-play').addEventListener('click', () => {
+      const starts = playNotes(song.parsed, song.rhythm, song.bpm);
+      showLyrics(li, song, starts);
+    });
     results.append(li);
   }
 }
