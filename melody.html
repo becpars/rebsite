@@ -1,0 +1,1214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Melodic Association Index</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply a saved light/dark choice before the page paints (shared with the blog)
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.dataset.theme = saved;
+    } catch (e) {}
+  </script>
+  <style>
+    /* Colors for this page */
+    :root {
+      --line: rgba(26, 39, 68, 0.25);
+      --line-soft: rgba(26, 39, 68, 0.1);
+      --tint: rgba(26, 39, 68, 0.07);
+      --field: rgba(255, 255, 255, 0.55);
+      --key-white: #fffdf8;
+      --key-white-hover: #f1ebde;
+      --key-white-pressed: #e9dcc0;
+      --key-black: #1a2744;
+      --key-black-hover: #2d4a78;
+      --key-black-pressed: #4a6290;
+    }
+
+    /* Dark mode: same soft palette as the blog */
+    :root[data-theme="dark"] {
+      color-scheme: dark;   /* dark checkboxes and scrollbars */
+      --text: #b2ab9f;
+      --muted: #7f889c;
+      --bg: #252c3c;
+      --accent: #cfc8bb;
+      --line: rgba(178, 171, 159, 0.25);
+      --line-soft: rgba(178, 171, 159, 0.12);
+      --tint: rgba(178, 171, 159, 0.08);
+      --field: rgba(0, 0, 0, 0.15);
+      --key-white: #bdb6aa;
+      --key-white-hover: #ccc5b9;
+      --key-white-pressed: #a99f8c;
+      --key-black: #141925;
+      --key-black-hover: #2a3346;
+      --key-black-pressed: #3a4560;
+    }
+
+    body {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .theme-toggle,
+    .theme-toggle:hover,
+    .theme-toggle:focus,
+    .theme-toggle:active {
+      position: absolute;
+      top: 1.6rem;
+      right: 1.5rem;
+      margin: 0;
+      padding: 0.25rem 0.5rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .theme-toggle:hover {
+      color: var(--accent);
+    }
+
+    /* Plain, scrollable page (no cloud background) */
+    body {
+      background: var(--bg);
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+    }
+
+    .wrap {
+      position: relative;
+      left: auto;
+      top: auto;
+      transform: none;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 0;
+      text-align: left;
+    }
+
+    .wrap h1 {
+      font-size: 1.2rem;
+      margin: 0.25rem 0 0;
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+      font-size: 0.85rem;
+    }
+
+    .intro {
+      margin: 0.25rem 0 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    /* ---------- input ---------- */
+    .entry {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    #notes {
+      flex: 1;
+      font: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      padding: 0.3rem 0.6rem;
+      color: var(--text);
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      min-width: 0;
+    }
+
+    #notes:focus {
+      outline: none;
+      border-color: var(--text);
+    }
+
+    /* Reset the site-wide dark button style for this page's controls */
+    .pad button,
+    .entry button,
+    .song-play {
+      font-family: inherit;
+      margin: 0;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .pad button:hover,
+    .entry button:hover,
+    .song-play:hover {
+      background: var(--tint);
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .entry button {
+      padding: 0.35rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: 2.6rem repeat(14, 1fr) repeat(2, minmax(1.4rem, 0.8fr)) minmax(1.6rem, 0.9fr);
+      /* two short rows, always the same total height (the piano's), so nothing jumps when toggling */
+      grid-template-rows: 1.7rem 1.7rem;
+      gap: 0.2rem;
+      margin: 0.4rem 0 0;
+    }
+
+    /* mode switch: numbers → solfège → piano */
+    .pad .mode-toggle {
+      grid-column: 1;
+      font-size: 0.68rem;
+      white-space: nowrap;
+      background: var(--tint);
+    }
+
+    .pad #backspace {
+      grid-column: 18;
+    }
+
+    /* interval view: 13 interval keys, then ↑ ↓ */
+    .pad .int-key,
+    .pad .dir-key { display: none; }
+    .pad.interval-mode {
+      grid-template-columns: 2.6rem repeat(13, 1fr) minmax(1.6rem, 0.9fr);
+    }
+    .pad.interval-mode .int-key,
+    .pad.interval-mode .dir-key { display: block; }
+    .pad.interval-mode .deg-key,
+    .pad.interval-mode .acc { display: none; }
+    .pad.interval-mode #backspace { grid-column: 15; }
+    .pad .int-key { font-size: 0.72rem; }
+    .pad .dir-key { font-size: 0.95rem; grid-row: 1; }   /* arrows on the top row */
+    .pad.interval-mode .int-key,
+    .pad.interval-mode #backspace { grid-row: 2; }        /* intervals and ⌫ below */
+    .pad .int-key.on,
+    .pad .dir-key.on {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .options .hidden { display: none; }
+
+    /* a little breathing room where the middle octave begins */
+    .pad .octave-start {
+      margin-left: 0.25rem;
+    }
+
+    .pad.solfege [data-deg] {
+      font-size: 0.75rem;
+    }
+
+    /* lower-octave keys carry a dot below, like the results */
+    .pad .deg {
+      margin-right: 0;
+    }
+
+    .pad .deg.low::after { bottom: -3px; }
+    .pad .piano .deg.low::after { bottom: -4px; }
+
+    /* piano view: hide the number keys and ♭ ♯, show a two-octave keyboard */
+    .pad > * { grid-row: 1; }
+    .pad.piano-mode #backspace { grid-row: 1 / 3; }   /* ⌫ matches the piano's height */
+    .pad .mode-toggle { grid-row: 1 / 3; }            /* view switch is full height in every view */
+    .pad .piano { display: none; }
+    .pad.piano-mode .deg-key,
+    .pad.piano-mode .acc { display: none; }
+    .pad.piano-mode .piano {
+      display: flex;
+      position: relative;
+      grid-column: 2 / 18;
+      grid-row: 1 / 3;
+      height: 100%;
+    }
+
+    .pad .piano .key {
+      padding: 0;
+      border-radius: 0 0 4px 4px;
+    }
+
+    .pad .piano .white {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 0.2rem;
+      margin-right: -1px;
+      font-size: 0.62rem;
+      color: var(--muted);
+      background: var(--key-white);
+    }
+
+    .pad .piano .white:hover {
+      background: var(--key-white-hover);
+    }
+
+    .pad .piano .black {
+      position: absolute;
+      top: 0;
+      width: 4.6%;
+      height: 60%;
+      transform: translateX(-50%);
+      z-index: 1;
+      background: var(--key-black);
+      border-color: var(--key-black);
+    }
+
+    .pad .piano .black:hover {
+      background: var(--key-black-hover);
+    }
+
+    .pad .piano .key.pressed {
+      background: var(--key-white-pressed);
+    }
+
+    .pad .piano .black.pressed {
+      background: var(--key-black-pressed);
+    }
+
+    .pad button {
+      padding: 0.2rem 0;
+      font-size: 0.85rem;
+    }
+
+    .pad .acc,
+    .pad #backspace {
+      font-size: 0.75rem;
+    }
+
+    .pad .acc.on,
+    .pad .quality-key.on {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    /* numbers & solfège views: major / minor on the top row, keys below */
+    .pad .quality-key { display: none; font-size: 0.72rem; }
+    .pad.numbers-mode .quality-key,
+    .pad.solfege .quality-key { display: block; grid-row: 1; }
+    .pad.numbers-mode .deg-key,
+    .pad.numbers-mode .acc,
+    .pad.numbers-mode #backspace,
+    .pad.solfege .deg-key,
+    .pad.solfege .acc,
+    .pad.solfege #backspace { grid-row: 2; }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.1rem 1rem;
+      margin: 0.4rem 0 0;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .options label {
+      cursor: pointer;
+    }
+
+    .hint {
+      margin: 0.5rem 0 0;
+    }
+
+    /* ---------- results ---------- */
+    .count {
+      margin: 1.1rem 0 0.25rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* one compact line per song: play · title & credit · degrees */
+    .song {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .song-main {
+      font-family: "Annapurna SIL", Georgia, "Times New Roman", serif;   /* the site's serif for everything about each song */
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 0.75rem;
+    }
+
+    .song-name {
+      flex: 1 1 14rem;
+      min-width: 0;
+    }
+
+    .song-title {
+      display: inline;
+      margin: 0;
+    }
+
+    .song-credit {
+      display: inline;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-left: 0.4rem;
+    }
+
+
+    .degrees {
+      font-size: 0.8rem;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      line-height: 1.7;
+      white-space: nowrap;
+    }
+
+    .degrees .hit {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* octave dots, like numbered (jianpu) notation: dot below = lower, dot above = higher */
+    .deg {
+      position: relative;
+      display: inline-block;
+      margin-right: 0.35em;
+    }
+
+    .deg.low::after,
+    .deg.high::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 3px;
+      height: 3px;
+      margin-left: -1.5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .deg.low::after { bottom: -1px; }
+    .deg.high::after { top: 1px; }
+
+    .song-play {
+      flex: none;
+      width: 1.4rem;
+      height: 1.4rem;
+      padding: 0;
+      font-size: 0.55rem;
+      align-self: center;
+    }
+
+    @media (max-width: 768px) {
+      .wrap { padding: 1.5rem 1rem 0; }
+      .pad { gap: 0.12rem; grid-template-columns: 2.2rem repeat(14, 1fr) repeat(2, minmax(1.1rem, 0.8fr)) minmax(1.3rem, 0.9fr); }
+      .pad button { font-size: 0.72rem; }
+      .pad.solfege [data-deg] { font-size: 0.55rem; }
+      .pad .mode-toggle { font-size: 0.58rem; }
+      .page { padding: 0 1rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="index.html" class="back">&larr; home</a>
+    <button class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
+    <main>
+      <h1>melodic association index</h1>
+    </main>
+  </div>
+
+  <div class="page">
+    <p class="small intro">Type scale degrees (<code>5 1 3</code>), solfège (<code>sol do mi</code>), or tap the keys to find songs that begin that way. Use <code>b3</code>, <code>#4</code> for chromatic notes.</p>
+
+    <div class="entry">
+      <input id="notes" type="text" placeholder="e.g. 5 1 3" autocomplete="off" spellcheck="false" aria-label="Scale degrees">
+      <button id="play-input" type="button" title="Play these notes">▶</button>
+      <button id="clear" type="button">clear</button>
+    </div>
+
+    <div class="pad" aria-label="Scale degree keypad, two octaves">
+      <button type="button" id="mode-toggle" class="mode-toggle" title="Switch between numbers, solfège and piano">1 2 3</button>
+      <button type="button" class="quality-key" data-q="major" style="grid-column:2 / 5">major</button>
+      <button type="button" class="quality-key" data-q="minor" style="grid-column:5 / 8">minor</button>
+      <button type="button" class="deg-key" data-deg="1" data-oct="-1" style="grid-column:2"><span class="deg low">1</span></button>
+      <button type="button" class="deg-key" data-deg="2" data-oct="-1" style="grid-column:3"><span class="deg low">2</span></button>
+      <button type="button" class="deg-key" data-deg="3" data-oct="-1" style="grid-column:4"><span class="deg low">3</span></button>
+      <button type="button" class="deg-key" data-deg="4" data-oct="-1" style="grid-column:5"><span class="deg low">4</span></button>
+      <button type="button" class="deg-key" data-deg="5" data-oct="-1" style="grid-column:6"><span class="deg low">5</span></button>
+      <button type="button" class="deg-key" data-deg="6" data-oct="-1" style="grid-column:7"><span class="deg low">6</span></button>
+      <button type="button" class="deg-key" data-deg="7" data-oct="-1" style="grid-column:8"><span class="deg low">7</span></button>
+      <button type="button" class="deg-key octave-start" data-deg="1" style="grid-column:9">1</button>
+      <button type="button" class="deg-key" data-deg="2" style="grid-column:10">2</button>
+      <button type="button" class="deg-key" data-deg="3" style="grid-column:11">3</button>
+      <button type="button" class="deg-key" data-deg="4" style="grid-column:12">4</button>
+      <button type="button" class="deg-key" data-deg="5" style="grid-column:13">5</button>
+      <button type="button" class="deg-key" data-deg="6" style="grid-column:14">6</button>
+      <button type="button" class="deg-key" data-deg="7" style="grid-column:15">7</button>
+      <button type="button" class="acc" data-acc="b" style="grid-column:16">♭</button>
+      <button type="button" class="acc" data-acc="#" style="grid-column:17">♯</button>
+      <button type="button" class="int-key" data-semis="0" title="unison" style="grid-column:2">P1</button>
+      <button type="button" class="int-key" data-semis="1" title="minor 2nd" style="grid-column:3">m2</button>
+      <button type="button" class="int-key" data-semis="2" title="major 2nd" style="grid-column:4">M2</button>
+      <button type="button" class="int-key" data-semis="3" title="minor 3rd" style="grid-column:5">m3</button>
+      <button type="button" class="int-key" data-semis="4" title="major 3rd" style="grid-column:6">M3</button>
+      <button type="button" class="int-key" data-semis="5" title="perfect 4th" style="grid-column:7">P4</button>
+      <button type="button" class="int-key" data-semis="6" title="tritone" style="grid-column:8">TT</button>
+      <button type="button" class="int-key" data-semis="7" title="perfect 5th" style="grid-column:9">P5</button>
+      <button type="button" class="int-key" data-semis="8" title="minor 6th" style="grid-column:10">m6</button>
+      <button type="button" class="int-key" data-semis="9" title="major 6th" style="grid-column:11">M6</button>
+      <button type="button" class="int-key" data-semis="10" title="minor 7th" style="grid-column:12">m7</button>
+      <button type="button" class="int-key" data-semis="11" title="major 7th" style="grid-column:13">M7</button>
+      <button type="button" class="int-key" data-semis="12" title="octave" style="grid-column:14">P8</button>
+      <button type="button" class="dir-key" data-dir="up" title="ascending" style="grid-column:2 / 4">↑</button>
+      <button type="button" class="dir-key" data-dir="down" title="descending" style="grid-column:4 / 6">↓</button>
+      <div class="piano" aria-label="Piano keyboard, two octaves, tonic on C">
+        <button type="button" class="key white" data-tok="C," aria-label="C lower"></button>
+        <button type="button" class="key white" data-tok="D," aria-label="D lower"></button>
+        <button type="button" class="key white" data-tok="E," aria-label="E lower"></button>
+        <button type="button" class="key white" data-tok="F," aria-label="F lower"></button>
+        <button type="button" class="key white" data-tok="G," aria-label="G lower"></button>
+        <button type="button" class="key white" data-tok="A," aria-label="A lower"></button>
+        <button type="button" class="key white" data-tok="B," aria-label="B lower"></button>
+        <button type="button" class="key white" data-tok="C" aria-label="C"></button>
+        <button type="button" class="key white" data-tok="D" aria-label="D"></button>
+        <button type="button" class="key white" data-tok="E" aria-label="E"></button>
+        <button type="button" class="key white" data-tok="F" aria-label="F"></button>
+        <button type="button" class="key white" data-tok="G" aria-label="G"></button>
+        <button type="button" class="key white" data-tok="A" aria-label="A"></button>
+        <button type="button" class="key white" data-tok="B" aria-label="B"></button>
+        <button type="button" class="key black" data-tok="C#," style="left:7.14%" aria-label="C# lower"></button>
+        <button type="button" class="key black" data-tok="D#," style="left:14.29%" aria-label="D# lower"></button>
+        <button type="button" class="key black" data-tok="F#," style="left:28.57%" aria-label="F# lower"></button>
+        <button type="button" class="key black" data-tok="G#," style="left:35.71%" aria-label="G# lower"></button>
+        <button type="button" class="key black" data-tok="A#," style="left:42.86%" aria-label="A# lower"></button>
+        <button type="button" class="key black" data-tok="C#" style="left:57.14%" aria-label="C#"></button>
+        <button type="button" class="key black" data-tok="D#" style="left:64.29%" aria-label="D#"></button>
+        <button type="button" class="key black" data-tok="F#" style="left:78.57%" aria-label="F#"></button>
+        <button type="button" class="key black" data-tok="G#" style="left:85.71%" aria-label="G#"></button>
+        <button type="button" class="key black" data-tok="A#" style="left:92.86%" aria-label="A#"></button>
+      </div>
+      <button type="button" id="backspace" title="Delete last note">⌫</button>
+    </div>
+
+    <div class="options">
+      <label><input type="checkbox" id="collapse"> ignore repeated notes</label>
+      <label id="anykey-label" title="Match the shape of the melody (its intervals) from any starting note"><input type="checkbox" id="anykey"> any key</label>
+    </div>
+
+    <p class="count" id="count" aria-live="polite"></p>
+    <ul class="results" id="results"></ul>
+  </div>
+
+<script>
+/*
+  ✍️ THE SONG LIST
+  Each song: title, credit, mode ("major" or "minor"), and its opening notes.
+  Notes are scale degrees counted from the tonic (1 = do), separated by spaces.
+    b3, #4 …  flatted / sharped degrees (minor keys use b3, b6, b7)
+    5,        a comma after the number = the octave below
+    1'        an apostrophe after the number = the octave above
+  Octave marks only affect playback and display; searching ignores them.
+
+  Optional rhythm: one number per note, in beats (1 = quarter note, 0.5 = eighth,
+  2 = half, 1.5 = dotted quarter, 0.75 + 0.25 = dotted eighth + sixteenth).
+  Optional bpm: tempo in beats per minute (default 120).
+  Songs without a rhythm play evenly.
+  Songs with empty notes ("") are placeholders and stay hidden until filled in
+  (see the list at the bottom).
+*/
+const SONGS = [
+  // ---------- folk, children's & traditional ----------
+  { title: "Twinkle, Twinkle, Little Star", credit: "Traditional", year: "ca. 1761", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2" },
+  { title: "Mary Had a Little Lamb", credit: "Traditional", year: "ca. 1830", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2" },
+  { title: "Frère Jacques", credit: "Traditional", year: "ca. 1780", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1" },
+  { title: "Row, Row, Row Your Boat", credit: "Traditional", year: "1852", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5" },
+  { title: "Hot Cross Buns", credit: "Traditional", year: "ca. 1798", notes: "3 2 1", rhythm: "1 1 2" },
+  { title: "Three Blind Mice", credit: "Traditional", year: "1609", notes: "3 2 1 3 2 1", rhythm: "1.5 1.5 3 1.5 1.5 3", bpm: 156 },
+  { title: "London Bridge Is Falling Down", credit: "Traditional", year: "ca. 1744", notes: "5 6 5 4 3 4 5", rhythm: "1.5 0.5 1 1 1 1 2" },
+  { title: "Old MacDonald Had a Farm", credit: "Traditional", year: "ca. 1917", notes: "1 1 1 5, 6, 6, 5,", rhythm: "1 1 1 1 1 1 2", bpm: 132 },
+  { title: "Yankee Doodle", credit: "Traditional", year: "ca. 1755", notes: "1 1 2 3 1 3 2 5,", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 120 },
+  { title: "Itsy Bitsy Spider", credit: "Traditional", year: "ca. 1910", notes: "5, 1 1 1 2 3 3" },
+  { title: "Pop Goes the Weasel", credit: "Traditional", year: "ca. 1852", notes: "1 1 2 2 3 5 3 1" },
+  { title: "If You're Happy and You Know It", credit: "Traditional", year: "ca. 1950", notes: "5, 5, 1 1 1 1 1 7, 1 2", rhythm: "0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 1"},
+  { title: "The Wheels on the Bus", credit: "Traditional", year: "1939", notes: "5, 1 1 1 1 3 5 3 1" },
+  { title: "Skip to My Lou", credit: "Traditional", year: "ca. 1844", notes: "3 3 1 1 3 3 5" },
+  { title: "This Old Man", credit: "Traditional", year: "ca. 1870", notes: "5 3 5 5 3 5", rhythm: "1 1 2 1 1 2" },
+  { title: "Clementine", credit: "Traditional", year: "1884", notes: "1 1 1 5, 3 3 3 1", rhythm: "0.75 0.25 1 1 0.75 0.25 1 1" },
+  { title: "She'll Be Comin' Round the Mountain", credit: "Traditional", year: "ca. 1899", notes: "5, 6, 1 1 1 1 6, 5, 3, 5, 1" },
+  { title: "Kumbaya", credit: "Traditional", year: "ca. 1926", notes: "1 3 5 5 5 6 6 5", rhythm: "1 1 1.5 0.5 2 1 1 3"},
+  { title: "Michael, Row the Boat Ashore", credit: "Traditional", year: "ca. 1867", notes: "1 3 5 3 5 6 5" },
+  { title: "Amazing Grace", credit: "Traditional (New Britain)", year: "1835", notes: "5, 1 3 1 3 2 1 6, 5,", rhythm: "1 2 0.5 0.5 2 1 2 1 2", bpm: 96 },
+  { title: "My Bonnie Lies Over the Ocean", credit: "Traditional", year: "ca. 1881", notes: "5, 3 2 1 2 1 6, 5, 3," },
+  { title: "Auld Lang Syne", credit: "Traditional", year: "1788", notes: "5, 1 1 1 3 2 1 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108 },
+  { title: "Shenandoah", credit: "Traditional", year: "ca. 1820", notes: "5, 1 1 1 2 3" },
+  { title: "Danny Boy (Londonderry Air)", credit: "Traditional", year: "1855", notes: "5, 1 2 3 2 3 6 5 3 2 1 6,", rhythm: "1 1 1 3 1 1 1 1 1 1 1 3" },
+  { title: "Home on the Range", credit: "Daniel Kelley", year: "ca. 1872", notes: "5, 5, 1 2 3 1 7, 6, 4, 4, 4," },
+  { title: "Oh! Susanna", credit: "Stephen Foster", year: "1848", notes: "1 2 3 5 5 6 5 3 1 2" },
+  { title: "Camptown Races", credit: "Stephen Foster", year: "1850", notes: "5 5 3 5 6 5 3", rhythm: "1 1 1 1 1 1 2", bpm: 170 },
+  { title: "Simple Gifts", credit: "Joseph Brackett", year: "1848", notes: "5, 5, 1 1 2 3 1 3 4 5" },
+  { title: "You Are My Sunshine", credit: "Jimmie Davis", year: "1940", notes: "5, 1 2 3 3" },
+  { title: "Brahms' Lullaby", credit: "Johannes Brahms", year: "1868", notes: "3 3 5 3 3 5", rhythm: "0.5 0.5 2 0.5 0.5 2", bpm: 86 },
+  { title: "Greensleeves", credit: "Traditional", year: "ca. 1580", mode: "minor", notes: "1 b3 4 5 6 5 4 2 b7,", rhythm: "0.5 1 0.5 0.75 0.25 0.5 1 0.5 1", bpm: 84 },
+  { title: "Scarborough Fair", credit: "Traditional", year: "ca. 1600", mode: "minor", notes: "1 1 5 5 5 2 b3 2 1", rhythm: "2 1 0.5 1.5 1 1.5 0.5 1 3" },
+
+  // ---------- anthems & occasions ----------
+  { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120 },
+  { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108 },
+  { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108 },
+  { title: "God Save the King / My Country, 'Tis of Thee", credit: "Traditional", year: "ca. 1745", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108 },
+  { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108 },
+  { title: "La Marseillaise", credit: "Rouget de Lisle", year: "1792", notes: "5, 5, 5, 1 1 2 2 5 3" },
+  { title: "When the Saints Go Marching In", credit: "Traditional", year: "ca. 1896", notes: "1 3 4 5", rhythm: "1 1 1 4", bpm: 144 },
+  { title: "Take Me Out to the Ball Game", credit: "Albert Von Tilzer", year: "1908", notes: "1 1' 6 5 3 5 2", rhythm: "2 1 1 1 1 3 3", bpm: 204 },
+  { title: "Bridal Chorus (\"Here Comes the Bride\")", credit: "Richard Wagner", year: "1850", notes: "5, 1 1 1", rhythm: "1 0.75 0.25 2", bpm: 84 },
+  { title: "Taps", credit: "Daniel Butterfield", year: "1862", notes: "5, 5, 1 5, 1 3", rhythm: "0.75 0.25 3 0.75 0.25 3", bpm: 84 },
+  { title: "Westminster Quarters", credit: "Clock chime", year: "1793", notes: "3 1 2 5,", rhythm: "1 1 1 2", bpm: 96 },
+  { title: "NBC Chimes", credit: "Broadcast chime", year: "ca. 1927", notes: "5, 3 1", rhythm: "1 1 2", bpm: 108 },
+
+  // ---------- holiday ----------
+  { title: "Jingle Bells (chorus)", credit: "James Lord Pierpont", year: "1857", notes: "3 3 3 3 3 3 3 5 1 2 3", rhythm: "1 1 2 1 1 2 1 1 1.5 0.5 4", bpm: 156 },
+  { title: "Jingle Bells (verse)", credit: "James Lord Pierpont", year: "1857", notes: "5, 3 2 1 5,", rhythm: "1 1 1 1 3", bpm: 156 },
+  { title: "Silent Night", credit: "Franz Xaver Gruber", year: "1818", notes: "5 6 5 3", rhythm: "1.5 0.5 1 3", bpm: 84 },
+  { title: "Joy to the World", credit: "arr. Lowell Mason", year: "1839", notes: "1' 7 6 5 4 3 2 1", rhythm: "2 1.5 0.5 3 1 2 2 3", bpm: 132 },
+  { title: "Deck the Halls", credit: "Welsh traditional", year: "ca. 1794", notes: "5 4 3 2 1 2 3 1", rhythm: "1.5 0.5 1 1 1 1 1 1", bpm: 144 },
+  { title: "We Wish You a Merry Christmas", credit: "Traditional", year: "ca. 1800", notes: "5, 1 1 2 1 7, 6,", rhythm: "1 1 0.5 0.5 0.5 0.5 1", bpm: 168 },
+  { title: "O Christmas Tree", credit: "Traditional", year: "1824", notes: "5, 1 1 1 2 3 3 3", rhythm: "1 0.75 0.25 1.5 0.5 0.75 0.25 1.5", bpm: 108 },
+  { title: "Hark! The Herald Angels Sing", credit: "Felix Mendelssohn", year: "1840", notes: "5, 1 1 7, 1 3 3 2", rhythm: "1 1 1.5 0.5 1 1 1 1", bpm: 132 },
+  { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1"},
+  { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120 },
+  { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", bpm: 144 },
+  { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1'", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5" },
+  { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "5 3 4 5 5 5 6 7 1' 1' 1'" },
+
+  // ---------- classical ----------
+  { title: "Ode to Joy", credit: "Ludwig van Beethoven", year: "1824", notes: "3 3 4 5 5 4 3 2 1 1 2 3", rhythm: "1 1 1 1 1 1 1 1 1 1 1 1", bpm: 132 },
+  { title: "Symphony No. 5", credit: "Ludwig van Beethoven", year: "1808", mode: "minor", notes: "5 5 5 b3", rhythm: "0.5 0.5 0.5 3", bpm: 156 },
+  { title: "Für Elise", credit: "Ludwig van Beethoven", year: "1810", mode: "minor", notes: "5 #4 5 #4 5 2 4 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1.5", bpm: 180 },
+  { title: "Moonlight Sonata", credit: "Ludwig van Beethoven", year: "1801", mode: "minor", notes: "5, 1 b3", rhythm: "1 1 1", bpm: 132 },
+  { title: "Eine kleine Nachtmusik", credit: "W. A. Mozart", year: "1787", notes: "1 5, 1 5, 1 5, 1 3 5", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 156 },
+  { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144 },
+  { title: "Canon in D", credit: "Johann Pachelbel", year: "ca. 1680", notes: "5 3 4 5 3 4 5 5, 6, 7, 1 2 3 4 3", rhythm: "1 0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 108 },
+  { title: "Spring, from The Four Seasons", credit: "Antonio Vivaldi", year: "1725", notes: "1 3 3 3 2 1 5" },
+  { title: "Hallelujah Chorus", credit: "G. F. Handel", year: "1741", notes: "1 5, 6, 5,", rhythm: "1 0.75 0.25 1", bpm: 108 },
+  { title: "Morning Mood", credit: "Edvard Grieg", year: "1875", notes: "5 3 2 1 2 3 5 3 2 1" },
+  { title: "In the Hall of the Mountain King", credit: "Edvard Grieg", year: "1875", mode: "minor", notes: "1 2 b3 4 5 b3 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 144 },
+  { title: "Can-Can (Galop infernal)", credit: "Jacques Offenbach", year: "1858", notes: "1 1 2 4 3 2 5 5 5 6 3 4 2", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1 0.5 0.5 0.5 0.5 1" },
+  { title: "Habanera, from Carmen", credit: "Georges Bizet", year: "1875", mode: "minor", notes: "1' 7 b7 b7 b7 6 b6 5", rhythm: "1 1 0.67 0.67 0.67 1 1 1" },
+
+  // ---------- stage, screen & games ----------
+  { title: "Over the Rainbow", credit: "Harold Arlen", year: "1939", notes: "1 1' 7 5 6 7 1'", rhythm: "2 2 1 0.5 0.5 1 1", bpm: 96 },
+  { title: "Edelweiss", credit: "Richard Rodgers", year: "1959", notes: "3 5 2'", rhythm: "2 1 3", bpm: 132 },
+  { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", bpm: 144 },
+  { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1", rhythm: "1 1 1 1 2", bpm: 192 },
+  { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5" },
+  { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120 },
+  { title: "The Imperial March", credit: "John Williams", year: "1980", mode: "minor", notes: "1 1 1 b6, b3 1 b6, b3 1", rhythm: "1 1 1 0.75 0.25 1 0.75 0.25 2", bpm: 120 },
+  { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1", rhythm: "1 1", bpm: 84 },
+  { title: "Close Encounters of the Third Kind (motif)", credit: "John Williams", year: "1977", notes: "2 3 1 1, 5,", rhythm: "1 1 1 1 2", bpm: 96 },
+  { title: "Hedwig's Theme", credit: "John Williams", year: "2001", mode: "minor", notes: "5, 1 b3 2 1 5 4 2", rhythm: "1 1.5 0.5 1 2 1 3 3", bpm: 216 },
+  { title: "The Simpsons Theme", credit: "Danny Elfman", year: "1989", notes: "1 #4 5" },
+  { title: "Super Mario Bros. Theme", credit: "Koji Kondo", year: "1985", notes: "3 3 3 1 3 5 5,", rhythm: "0.5 1 1 0.5 1 2 2", bpm: 216 },
+  { title: "Tetris Theme (Korobeiniki)", credit: "Russian traditional", year: "ca. 1861", mode: "minor", notes: "5 2 b3 4 b3 2 1 1 b3 5 4 b3 2", rhythm: "1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1.5", bpm: 168 },
+
+  // ---------- popular ----------
+  { title: "Yesterday", credit: "The Beatles", year: "1965", notes: "2 1 1", rhythm: "0.5 0.5 3", bpm: 108 },
+  { title: "Hey Jude", credit: "The Beatles", year: "1968", notes: "5 3 3 5 6 2" },
+
+  // 1960s
+  { title: "Fly Me to the Moon", credit: "Frank Sinatra", year: "1964", notes: "1' 7 6 5 4" },
+  { title: "The Sound of Silence", credit: "Simon & Garfunkel", year: "1965", mode: "minor", notes: "1 1 b3 b3 5 5 4" },
+  { title: "The Pink Panther Theme", credit: "Henry Mancini", year: "1963", mode: "minor", notes: "7, 1 2 b3 7, 1 2 b3" },
+  { title: "Mission: Impossible Theme", credit: "Lalo Schifrin", year: "1966", mode: "minor", notes: "1 1 b3 4 1 1 b7, 7," },
+
+  // 1970s
+  { title: "Smoke on the Water (riff)", credit: "Deep Purple", year: "1972", mode: "minor", notes: "1 b3 4 1 b3 b5 4 1 b3 4 b3 1" },
+
+  // 1980s
+  { title: "Under Pressure (bass riff)", credit: "Queen & David Bowie", year: "1981", notes: "1 1 1 1 1 5, 1" },
+  { title: "Eye of the Tiger (riff)", credit: "Survivor", year: "1982", mode: "minor", notes: "1 1 b7, 1 1 b7, 1 1 b7, b6,", rhythm: "2 0.7 0.7 2.7 0.7 0.7 2.7 0.7 0.7 3" },
+  { title: "Billie Jean", credit: "Michael Jackson", year: "1983", mode: "minor", notes: "1 1 b7, 5, 1 1 b7, 5,", rhythm: "0.5 0.5 1 1 0.5 1 1 0.5" },
+  { title: "Take On Me (synth riff)", credit: "a-ha", year: "1985", notes: "6 6 4 2 2 5 5 5 7 7 1' 2' 1'" },
+  { title: "The Final Countdown (synth riff)", credit: "Europe", year: "1986", mode: "minor", notes: "5 4 5 1 b6 5 b6 5 4", rhythm: "0.25 0.25 1 2.5 0.25 0.25 0.5 0.5 2" },
+  { title: "Sweet Child o' Mine (riff)", credit: "Guns N' Roses", year: "1987", notes: "1 1' 5 4 4' 5 3' 5" },
+
+  // 1990s
+  { title: "Smells Like Teen Spirit (guitar riff)", credit: "Nirvana", year: "1991", mode: "minor", notes: "1 4 b3 b6" },
+  { title: "My Heart Will Go On", credit: "Céline Dion", year: "1997", notes: "1 1 1 1 7, 1 1 7, 1 2 3 2" },
+
+  // 2000s
+  { title: "Clocks (piano riff)", credit: "Coldplay", year: "2002", notes: "1' 5 3 1' 5 3 1' 5" },
+  { title: "Seven Nation Army (riff)", credit: "The White Stripes", year: "2003", mode: "minor", notes: "1 1 b3 1 b7, b6, 5," },
+  // ---------- ✍️ waiting for melodies ----------
+  // These don't show on the page until their notes are filled in.
+  // Add the opening notes (and mode: "minor" if needed); rhythm and bpm are optional.
+
+  // 1960s
+  { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3" },
+  { title: "Moon River", credit: "Audrey Hepburn", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5" },
+  { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6" },
+  { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "" },
+  { title: "My Girl", credit: "The Temptations", year: "1964", notes: "" },
+  { title: "Unchained Melody", credit: "The Righteous Brothers", year: "1965", notes: "" },
+  { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "" },
+  { title: "Respect", credit: "Aretha Franklin", year: "1967", notes: "" },
+  { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "" },
+  { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "" },
+
+  // 1970s
+  { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "" },
+  { title: "Bridge Over Troubled Water", credit: "Simon & Garfunkel", year: "1970", notes: "" },
+  { title: "Imagine", credit: "John Lennon", year: "1971", notes: "" },
+  { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "" },
+  { title: "Superstition", credit: "Stevie Wonder", year: "1972", notes: "" },
+  { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "" },
+  { title: "Bohemian Rhapsody", credit: "Queen", year: "1975", notes: "" },
+  { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "" },
+  { title: "Stayin' Alive", credit: "Bee Gees", year: "1977", notes: "" },
+  { title: "September", credit: "Earth, Wind & Fire", year: "1978", notes: "" },
+
+  // 1980s
+  { title: "Another One Bites the Dust", credit: "Queen", year: "1980", notes: "" },
+  { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "" },
+  { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "" },
+  { title: "Every Breath You Take", credit: "The Police", year: "1983", notes: "" },
+  { title: "Girls Just Want to Have Fun", credit: "Cyndi Lauper", year: "1983", notes: "" },
+  { title: "Time After Time", credit: "Cyndi Lauper", year: "1984", notes: "" },
+  { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "" },
+  { title: "Livin' on a Prayer", credit: "Bon Jovi", year: "1986", notes: "" },
+  { title: "Don't Worry, Be Happy", credit: "Bobby McFerrin", year: "1988", notes: "" },
+  { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "" },
+
+  // 1990s
+  { title: "Vogue", credit: "Madonna", year: "1990", notes: "" },
+  { title: "I Will Always Love You", credit: "Whitney Houston", year: "1992", notes: "" },
+  { title: "Creep", credit: "Radiohead", year: "1992", notes: "" },
+  { title: "Wonderwall", credit: "Oasis", year: "1995", notes: "" },
+  { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "" },
+  { title: "Wannabe", credit: "Spice Girls", year: "1996", notes: "" },
+  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "" },
+  { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "" },
+  { title: "Believe", credit: "Cher", year: "1998", notes: "" },
+  { title: "No Scrubs", credit: "TLC", year: "1999", notes: "" },
+
+  // 2000s
+  { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "" },
+  { title: "Crazy in Love", credit: "Beyoncé", year: "2003", notes: "" },
+  { title: "Hey Ya!", credit: "OutKast", year: "2003", notes: "" },
+  { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "" },
+  { title: "Hey There Delilah", credit: "Plain White T's", year: "2006", notes: "" },
+  { title: "Umbrella", credit: "Rihanna", year: "2007", notes: "" },
+  { title: "Viva la Vida", credit: "Coldplay", year: "2008", notes: "" },
+  { title: "Poker Face", credit: "Lady Gaga", year: "2008", notes: "" },
+  { title: "Single Ladies (Put a Ring on It)", credit: "Beyoncé", year: "2008", notes: "" },
+  { title: "I Gotta Feeling", credit: "The Black Eyed Peas", year: "2009", notes: "" },
+
+  // 2010s
+  { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "" },
+  { title: "Someone Like You", credit: "Adele", year: "2011", notes: "" },
+  { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "" },
+  { title: "Somebody That I Used to Know", credit: "Gotye", year: "2011", notes: "" },
+  { title: "Royals", credit: "Lorde", year: "2013", notes: "" },
+  { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "" },
+  { title: "Happy", credit: "Pharrell Williams", year: "2013", notes: "" },
+  { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "" },
+  { title: "Uptown Funk", credit: "Mark Ronson ft. Bruno Mars", year: "2014", notes: "" },
+  { title: "Shape of You", credit: "Ed Sheeran", year: "2017", notes: "" },
+
+  // 2020s
+  { title: "Blinding Lights", credit: "The Weeknd", year: "2019", notes: "" },
+  { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "" },
+  { title: "Levitating", credit: "Dua Lipa", year: "2020", notes: "" },
+  { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "" },
+  { title: "good 4 u", credit: "Olivia Rodrigo", year: "2021", notes: "" },
+  { title: "As It Was", credit: "Harry Styles", year: "2022", notes: "" },
+  { title: "Anti-Hero", credit: "Taylor Swift", year: "2022", notes: "" },
+  { title: "Flowers", credit: "Miley Cyrus", year: "2023", notes: "" },
+  { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "" },
+  { title: "Birds of a Feather", credit: "Billie Eilish", year: "2024", notes: "" },
+];
+
+/* ---------- parsing ---------- */
+const BASE = { 1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11 };
+const SOLFEGE = {
+  do: '1', di: '#1', ra: 'b2', re: '2', ri: '#2', me: 'b3', mi: '3', fa: '4', fi: '#4',
+  se: 'b5', sol: '5', so: '5', si: '#5', le: 'b6', la: '6', li: '#6', te: 'b7', ti: '7'
+};
+
+// One note token -> { pc: pitch class 0–11, oct: -1/0/+1, label }
+const NOTE_PC = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+function parseToken(tok) {
+  tok = tok.trim().replace('♭', 'b').replace('♯', '#').replace('’', "'");
+  // note names: a letter A–G, then optional # or b, then octave marks
+  const nm = tok.match(/^([A-Ga-g])([#b]?)([,']*)$/);
+  if (nm) {
+    const pc = (NOTE_PC[nm[1].toLowerCase()] + (nm[2] === '#' ? 1 : nm[2] === 'b' ? -1 : 0) + 12) % 12;
+    const oct = (nm[3].match(/'/g) || []).length - (nm[3].match(/,/g) || []).length;
+    return { pc, oct, kind: 'note', label: nm[1].toUpperCase() + nm[2].replace('b', '♭').replace('#', '♯') };
+  }
+  tok = tok.toLowerCase();
+  const marks = tok.match(/[,']*$/)[0];            // octave marks also work after solfège: do'
+  const core = tok.slice(0, tok.length - marks.length);
+  if (SOLFEGE[core]) tok = SOLFEGE[core] + marks;
+  const m = tok.match(/^([b#]*)([1-7])([,']*)$/);
+  if (!m) return null;
+  let pc = BASE[m[2]];
+  for (const c of m[1]) pc += c === '#' ? 1 : -1;
+  const oct = (m[3].match(/'/g) || []).length - (m[3].match(/,/g) || []).length;
+  return { pc: (pc + 12) % 12, oct, label: m[1].replace(/b/g, '♭').replace(/#/g, '♯') + m[2] };
+}
+
+/* intervals: ↑P4, ↓m3, P1 … (also + / - for up / down) */
+const INTERVALS = { P1: 0, m2: 1, M2: 2, m3: 3, M3: 4, P4: 5, TT: 6, A4: 6, d5: 6, P5: 7, m6: 8, M6: 9, m7: 10, M7: 11, P8: 12 };
+const INTERVAL_NAME = ['P1', 'm2', 'M2', 'm3', 'M3', 'P4', 'TT', 'P5', 'm6', 'M6', 'm7', 'M7', 'P8'];
+function parseInterval(tok) {
+  const m = tok.match(/^([↑↓+^v-]?)(P1|m2|M2|m3|M3|P4|TT|A4|d5|P5|m6|M6|m7|M7|P8)$/);
+  if (!m) return null;
+  const size = INTERVALS[m[2]];
+  const down = m[1] === '↓' || m[1] === '-' || m[1] === 'v';
+  return { kind: 'interval', semis: down ? -size : size };
+}
+const intervalToken = d => d === 0 ? 'P1' : (d > 0 ? '↑' : '↓') + INTERVAL_NAME[Math.min(Math.abs(d), 12)];
+
+// Text typed by the person -> list of notes, or list of intervals (spaces optional for plain digits: "5123")
+function parseInput(text) {
+  text = text.trim();
+  if (!text) return [];
+  let tokens = text.match(/[↑↓+^-]?[^\s,↑↓-]+,*/g) || [];
+  if (tokens.length === 1 && /^[1-7]{2,}$/.test(tokens[0])) tokens = tokens[0].split('');
+  const ints = tokens.map(parseInterval);
+  if (!ints.includes(null)) return ints;
+  const notes = tokens.map(t => parseToken(t.replace(/^-/, '')));
+  return notes.includes(null) ? null : notes;
+}
+const isIntervals = q => q && q.length && q[0].kind === 'interval';
+
+// exact pitch in semitones from the tonic, using octave marks
+const pitch = n => n.pc + 12 * n.oct;
+
+// turn typed notes into pitches (closest octave unless the person marked octaves)
+function notePitches(notes) {
+  const marked = notes.some(n => n.oct !== 0);
+  let prev = null;
+  return notes.map(n => {
+    let p = pitch(n);
+    if (!marked && prev !== null) {
+      while (p - prev > 6) p -= 12;
+      while (prev - p > 6) p += 12;
+    }
+    return (prev = p);
+  });
+}
+
+// search by ascending/descending intervals (exact size and direction)
+function searchIntervals(steps, opts) {
+  const q = opts.collapse ? steps.filter(d => d !== 0) : steps;
+  const out = [];
+  for (const song of SONGS) {
+    let notes = song.parsed.map((n, i) => ({ p: pitch(n), i }));
+    if (opts.collapse) notes = notes.filter((x, k) => k === 0 || x.p !== notes[k - 1].p);
+    const diffs = notes.slice(1).map((x, k) => x.p - notes[k].p);
+    const starts = opts.anywhere ? diffs.map((_, k) => k) : [0];
+    for (const at of starts) {
+      if (at + q.length <= diffs.length && q.every((d, j) => diffs[at + j] === d)) {
+        const hitIdx = new Set();
+        for (let i = notes[at].i; i <= notes[at + q.length].i; i++) hitIdx.add(i);
+        out.push({ song, at, hitIdx, tonic: null, extra: diffs.length - q.length });
+        break;
+      }
+    }
+  }
+  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || a.song.title.localeCompare(b.song.title));
+  return out;
+}
+
+const collapse = arr => arr.filter((n, i) => i === 0 || n.pc !== arr[i - 1].pc);
+
+// placeholders with no notes yet are left out quietly
+for (let i = SONGS.length - 1; i >= 0; i--) if (!SONGS[i].notes.trim()) SONGS.splice(i, 1);
+SONGS.forEach(s => { s.parsed = s.notes.trim().split(/\s+/).map(parseToken); });
+// a song with a typo in its notes is skipped (and named in the console) instead of breaking the whole list
+for (let i = SONGS.length - 1; i >= 0; i--) {
+  if (SONGS[i].parsed.includes(null)) {
+    console.warn(`Skipping "${SONGS[i].title}": couldn't read its notes "${SONGS[i].notes}". Octave marks go after the number, like 5, (lower) or 5' (higher).`);
+    SONGS.splice(i, 1);
+  }
+}
+/* ---------- search ---------- */
+// interval between two notes, as a pitch class step (0–11), so octave marks don't matter
+const step = (a, b) => (b.pc - a.pc + 12) % 12;
+
+function search(query, opts) {
+  const out = [];
+  for (const song of SONGS) {
+    const seq = opts.collapse ? collapse(song.parsed) : song.parsed;
+    const q = opts.collapse ? collapse(query) : query;
+    const starts = opts.anywhere ? seq.map((_, i) => i) : [0];
+    // degrees: every note must be the same scale degree
+    // intervals: every step between notes must match, from any starting note
+    const fits = at => opts.intervals
+      ? seq.length - at >= q.length && q.every((n, i) => i === 0 || step(q[i - 1], n) === step(seq[at + i - 1], seq[at + i]))
+      : q.every((n, i) => seq[at + i] && seq[at + i].pc === n.pc);
+    for (const at of starts) {
+      if (fits(at)) {
+        // map matched positions back onto the uncollapsed note list for highlighting
+        const hitIdx = new Set();
+        if (opts.collapse) {
+          let k = -1;
+          song.parsed.forEach((n, i) => {
+            if (i === 0 || n.pc !== song.parsed[i - 1].pc) k++;
+            if (k >= at && k < at + q.length) hitIdx.add(i);
+          });
+        } else {
+          for (let i = at; i < at + q.length; i++) hitIdx.add(i);
+        }
+        // the key the person played in: their first note minus the song's matched degree
+        const tonic = opts.intervals ? (q[0].pc - seq[at].pc + 12) % 12 : null;
+        out.push({ song, at, hitIdx, tonic, extra: seq.length - q.length });
+        break;
+      }
+    }
+  }
+  // best first: matches at the very start, then shortest leftover, then alphabetical
+  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || a.song.title.localeCompare(b.song.title));
+  return out;
+}
+
+/* ---------- sound ---------- */
+let audio;
+let playing = [];   // notes currently sounding or scheduled, so a new playback can cut them off
+
+function stopPlayback() {
+  if (!audio) return;
+  const now = audio.currentTime;
+  for (const { osc, gain } of playing) {
+    try {
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setTargetAtTime(0, now, 0.015);   // quick fade, no click
+      osc.stop(now + 0.08);
+    } catch (e) {}
+  }
+  playing = [];
+}
+
+function playNotes(notes, rhythm, bpm = 120) {
+  if (!notes || !notes.length) return;
+  const beats = rhythm ? rhythm.split(/\s+/).map(Number) : null;
+  const timed = beats && beats.length === notes.length && beats.every(b => b > 0);
+  if (beats && !timed) console.warn('Rhythm doesn\'t match the number of notes; playing evenly.');
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  if (audio.state === 'suspended') audio.resume();
+  stopPlayback();   // a new playback interrupts whatever was playing
+  const tonic = 261.63; // C4
+  let t = audio.currentTime + 0.05;
+  let prev = null;
+  // if any typed note has an octave mark, play every note in its marked octave
+  const hasOctaves = notes.some(n => n.fromInput && n.oct !== 0);
+  for (const [i, n] of notes.entries()) {
+    const dur = timed ? beats[i] * 60 / bpm : 0.36;   // seconds this note lasts
+    // songs carry octave marks; typed notes pick the closest octave to the previous note
+    let semis = n.pc + 12 * n.oct;
+    if (n.fromInput && !hasOctaves && prev !== null) {
+      while (semis - prev > 6) semis -= 12;
+      while (prev - semis > 6) semis += 12;
+    }
+    prev = semis;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = tonic * Math.pow(2, semis / 12);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.22, t + 0.02);
+    const ring = timed ? Math.max(0.15, dur * 0.95) : 0.42;   // short notes stay crisp, long notes sustain
+    gain.gain.setValueAtTime(0.22, t + Math.min(0.08, ring / 4));
+    gain.gain.exponentialRampToValueAtTime(0.001, t + ring);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(t);
+    osc.stop(t + ring + 0.03);
+    const entry = { osc, gain };
+    playing.push(entry);
+    osc.onended = () => { playing = playing.filter(p => p !== entry); };
+    t += dur;
+  }
+}
+
+/* ---------- page ---------- */
+const input = document.getElementById('notes');
+const results = document.getElementById('results');
+const count = document.getElementById('count');
+const collapseBox = document.getElementById('collapse');
+const anykeyBox = document.getElementById('anykey');
+let accidental = '';
+
+/* ---------- keypad modes: numbers, solfège, piano ---------- */
+const MODES = ['numbers', 'solfege', 'piano', 'intervals'];
+const MODE_LABEL = { numbers: '1 2 3', solfege: 'do re', piano: '🎹', intervals: '↑↓' };
+const MODE_NAME = { numbers: 'numbers', solfege: 'solfège', piano: 'piano', intervals: 'intervals' };
+const DEG_LABEL = ['1', 'b2', '2', 'b3', '3', '4', '#4', '5', 'b6', '6', 'b7', '7'];
+const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const SYLLABLES = ['do', 'ra', 're', 'me', 'mi', 'fa', 'fi', 'sol', 'le', 'la', 'te', 'ti'];
+const WHITE_SYL = ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti'];
+const MINOR_SYL = ['do', 're', 'me', 'fa', 'sol', 'le', 'te'];   // do-based minor
+const keySyllables = () => quality === 'minor' ? MINOR_SYL : WHITE_SYL;
+let mode = 'numbers';
+let quality = 'major';   // numbers view: major or minor (minor lowers 3, 6 and 7)
+try { if (localStorage.getItem('melodyQuality') === 'minor') quality = 'minor'; } catch (e) {}
+try { if (MODES.includes(localStorage.getItem('melodyKeys'))) mode = localStorage.getItem('melodyKeys'); } catch (e) {}
+
+// how a note is written in the current mode (solfège mode shows syllables; otherwise numbers)
+const labelFor = n => (mode === 'solfege' && n.kind !== 'note') ? SYLLABLES[n.pc] : n.label;
+
+// what a key press types into the box
+function tokenFor(tok) {
+  if (mode !== 'solfege' || /^[A-G]/.test(tok)) return tok;
+  const marks = tok.match(/[,']*$/)[0];
+  const core = tok.slice(0, tok.length - marks.length);
+  const n = parseToken(core);
+  return (/^[1-7]$/.test(core) ? WHITE_SYL[+core - 1] : SYLLABLES[n.pc]) + marks;
+}
+
+// a note written out in the current mode, keeping its octave mark
+const spell = n => (mode === 'solfege' && n.kind !== 'note' ? SYLLABLES[n.pc] : n.label.replace('♭', 'b').replace('♯', '#'))
+  + (n.oct > 0 ? "'".repeat(n.oct) : ','.repeat(-n.oct));
+
+function applyMode(rewrite = true) {
+  const pad = document.querySelector('.pad');
+  pad.classList.toggle('solfege', mode === 'solfege');
+  pad.classList.toggle('numbers-mode', mode === 'numbers');
+  pad.querySelectorAll('.quality-key').forEach(b => b.classList.toggle('on', b.dataset.q === quality));
+  pad.classList.toggle('piano-mode', mode === 'piano');
+  pad.classList.toggle('interval-mode', mode === 'intervals');
+  document.getElementById('anykey-label').classList.toggle('hidden', mode === 'intervals' || mode === 'piano');
+  clearPending();
+  const next = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
+  const toggle = document.getElementById('mode-toggle');
+  toggle.textContent = MODE_LABEL[next];   // shows where a click will take you
+  toggle.title = `Switch to ${MODE_NAME[next]}`;
+  pad.querySelectorAll('.deg-key').forEach(b => {
+    const flat = quality === 'minor' && '367'.includes(b.dataset.deg);
+    const text = mode === 'solfege' ? keySyllables()[+b.dataset.deg - 1] : (flat ? '♭' : '') + b.dataset.deg;
+    b.innerHTML = b.dataset.oct ? `<span class="deg low">${text}</span>` : text;
+  });
+  // rewrite what's already typed into the current mode's spelling
+  const parsed = rewrite ? parseInput(input.value) : null;
+  if (parsed && parsed.length) {
+    if (mode === 'intervals' && !isIntervals(parsed)) {
+      // notes → the intervals between them
+      const ps = notePitches(parsed);
+      input.value = ps.slice(1).map((p, k) => intervalToken(p - ps[k])).join(' ');
+    } else if (mode !== 'intervals' && isIntervals(parsed)) {
+      // intervals → notes starting on the tonic (C on the piano), searched in any key
+      let p = 0;
+      const ps = [0, ...parsed.map(x => (p += x.semis))];
+      input.value = ps.map(q => {
+        const pc = ((q % 12) + 12) % 12, oct = Math.floor(q / 12);
+        const base = mode === 'piano' ? SHARP_NAMES[pc] : mode === 'solfege' ? SYLLABLES[pc] : DEG_LABEL[pc];
+        return base + (oct > 0 ? "'".repeat(oct) : ','.repeat(-oct));
+      }).join(' ');
+      if (mode !== 'piano') anykeyBox.checked = true;
+    } else if (!isIntervals(parsed)) {
+      input.value = parsed.map(spell).join(' ');
+    }
+  }
+  render();
+}
+
+document.getElementById('mode-toggle').addEventListener('click', () => {
+  mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
+  try { localStorage.setItem('melodyKeys', mode); } catch (e) {}
+  applyMode();
+});
+
+function addNote(tok) {
+  const current = parseInput(input.value);
+  const base = isIntervals(current) ? '' : input.value.trim();   // don't mix notes into a list of intervals
+  input.value = (base + ' ' + tokenFor(tok)).trim();
+  render();
+  const note = parseToken(tok);
+  note.fromInput = true;
+  playNotes([note]);
+}
+
+function degreesHTML(song, hitIdx) {
+  return song.parsed.map((n, i) => {
+    const cls = ['deg', n.oct < 0 ? 'low' : n.oct > 0 ? 'high' : '', hitIdx.has(i) ? 'hit' : ''].join(' ').trim();
+    return `<span class="${cls}">${labelFor(n)}</span>`;
+  }).join('');
+}
+
+function render() {
+  const query = parseInput(input.value);
+  results.innerHTML = '';
+  if (query === null) {
+    count.textContent = "Hmm, I can't read that. Try numbers 1–7 (with b or # if needed), solfège, note names like E D# E, or intervals like ↑P4 ↓m2.";
+    return;
+  }
+  if (isIntervals(query)) return renderList(
+    searchIntervals(query.map(x => x.semis), { collapse: collapseBox.checked }),
+    query, `starting with ${query.map(x => intervalToken(x.semis)).join(' ')}`);
+
+  // played or typed note names (from the piano) always search by shape, in any key
+  const intervals = query.some(n => n.kind === 'note') || anykeyBox.checked;
+  const searching = query.length && !(intervals && query.length < 2);
+  const list = searching
+    ? search(query, { collapse: collapseBox.checked, intervals })
+    : SONGS.map(song => ({ song, hitIdx: new Set() })).sort((a, b) => a.song.title.localeCompare(b.song.title));
+
+  const shown = query.map(labelFor).join(' ');
+  count.textContent = !query.length ? `All ${list.length} songs`
+    : !searching ? `Play one more note to match the shape of ${shown} in any key`
+    : `${list.length} ${list.length === 1 ? 'song' : 'songs'} starting with ${shown}${intervals ? ' (any key)' : ''}`;
+  renderList(list, query, null);
+}
+
+function renderList(list, query, description) {
+  if (description !== null) count.textContent = `${list.length} ${list.length === 1 ? 'song' : 'songs'} ${description}`;
+  for (const { song, hitIdx, tonic } of list) {
+    const li = document.createElement('li');
+    li.className = 'song';
+    li.innerHTML = `
+      <button class="song-play" type="button" title="Play the opening">▶</button>
+      <div class="song-main">
+        <span class="song-name"><p class="song-title"></p><span class="song-credit"></span></span>
+        <span class="degrees">${degreesHTML(song, hitIdx)}</span>
+      </div>`;
+
+    const title = li.querySelector('.song-title');
+    title.textContent = song.title;
+    li.querySelector('.song-credit').textContent = song.year ? `${song.credit} · ${song.year}` : song.credit;
+    li.querySelector('.song-play').addEventListener('click', () => playNotes(song.parsed, song.rhythm, song.bpm));
+    results.append(li);
+  }
+}
+
+// major / minor (numbers view)
+document.querySelectorAll('.pad .quality-key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    quality = btn.dataset.q;
+    try { localStorage.setItem('melodyQuality', quality); } catch (e) {}
+    applyMode(false);   // relabel the keys, keep what's typed
+  });
+});
+
+// keypad
+document.querySelectorAll('.pad [data-deg]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const d = btn.dataset.deg;
+    // minor: 3 6 7 are ♭3 ♭6 ♭7 (me le te); ♯ gives back the natural note
+    const pre = (quality === 'minor' && '367'.includes(d))
+      ? (accidental === '#' ? '' : 'b' + accidental) : accidental;
+    const tok = pre + d + (btn.dataset.oct ? ',' : '');
+    accidental = '';
+    document.querySelectorAll('.pad .acc').forEach(a => a.classList.remove('on'));
+    addNote(tok);
+  });
+});
+document.querySelectorAll('.pad .key').forEach(key => {
+  key.addEventListener('click', () => {
+    addNote(key.dataset.tok);
+    key.classList.add('pressed');
+    setTimeout(() => key.classList.remove('pressed'), 180);
+  });
+});
+document.querySelectorAll('.pad [data-acc]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const turningOn = accidental !== btn.dataset.acc;
+    document.querySelectorAll('.pad .acc').forEach(a => a.classList.remove('on'));
+    accidental = turningOn ? btn.dataset.acc : '';
+    btn.classList.toggle('on', turningOn);
+  });
+});
+// interval keypad: pick an interval and a direction, in either order
+let pendingSemis = null, pendingDir = null;
+function clearPending() {
+  pendingSemis = pendingDir = null;
+  document.querySelectorAll('.pad .int-key, .pad .dir-key').forEach(b => b.classList.remove('on'));
+}
+const intervalNotes = steps => {
+  let p = 0;
+  return [0, ...steps.map(d => (p += d))].map(q => ({ pc: ((q % 12) + 12) % 12, oct: Math.floor(q / 12) }));
+};
+function commitInterval() {
+  const d = pendingDir === 'down' ? -pendingSemis : pendingSemis;
+  const current = parseInput(input.value);
+  input.value = ((isIntervals(current) ? input.value.trim() : '') + ' ' + intervalToken(d)).trim();
+  clearPending();
+  render();
+  playNotes(intervalNotes([d]));
+}
+document.querySelectorAll('.pad .int-key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const semis = +btn.dataset.semis;
+    if (semis === 0) { pendingSemis = 0; return commitInterval(); }
+    pendingSemis = semis;
+    if (pendingDir) return commitInterval();
+    document.querySelectorAll('.pad .int-key').forEach(b => b.classList.toggle('on', b === btn));
+  });
+});
+document.querySelectorAll('.pad .dir-key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    pendingDir = btn.dataset.dir;
+    if (pendingSemis !== null) return commitInterval();
+    document.querySelectorAll('.pad .dir-key').forEach(b => b.classList.toggle('on', b === btn));
+  });
+});
+
+document.getElementById('backspace').addEventListener('click', () => {
+  input.value = input.value.trim().split(/\s+/).slice(0, -1).join(' ');
+  render();
+});
+document.getElementById('clear').addEventListener('click', () => {
+  input.value = '';
+  render();
+  input.focus();
+});
+document.getElementById('play-input').addEventListener('click', () => {
+  const notes = parseInput(input.value);
+  if (!notes) return;
+  if (isIntervals(notes)) return playNotes(intervalNotes(notes.map(x => x.semis)));
+  playNotes(notes.map(n => ({ ...n, fromInput: true })));
+});
+
+input.addEventListener('input', render);
+collapseBox.addEventListener('change', render);
+anykeyBox.addEventListener('change', render);
+applyMode();
+</script>
+<script>
+// light / dark toggle, same as the blog
+(() => {
+  const root = document.documentElement;
+  const btn = document.querySelector('.theme-toggle');
+  const isDark = () => root.dataset.theme === 'dark';
+  const show = () => {
+    btn.textContent = isDark() ? '☼' : '☾';
+    btn.title = isDark() ? 'Light mode' : 'Dark mode';
+  };
+  btn.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    show();
+  });
+  show();
+})();
+</script>
+</body>
+</html>
