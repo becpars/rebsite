@@ -29,6 +29,7 @@
       --key-black: #1a2744;
       --key-black-hover: #2d4a78;
       --key-black-pressed: #4a6290;
+      --key-edge: rgba(26, 39, 68, 0.25);   /* outline between piano keys */
     }
 
     /* Dark mode: same soft palette as the blog */
@@ -48,6 +49,7 @@
       --key-black: #141925;
       --key-black-hover: #2a3346;
       --key-black-pressed: #3a4560;
+      --key-edge: rgba(15, 19, 30, 0.75);   /* dark outline so the parchment keys stay distinct */
     }
 
     body {
@@ -73,6 +75,54 @@
 
     .theme-toggle:hover {
       color: var(--accent);
+    }
+
+    /* feedback box in the intro */
+    .feedback {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.3rem;
+      max-width: 100%;
+    }
+
+    #feedback-text {
+      font: inherit;
+      width: 15rem;
+      max-width: 60vw;
+      padding: 0.15rem 0.4rem;
+      color: var(--text);
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    #feedback-text:focus {
+      outline: none;
+      border-color: var(--text);
+    }
+
+    #feedback-send,
+    #feedback-send:focus,
+    #feedback-send:active {
+      font: inherit;
+      margin: 0;
+      padding: 0.15rem 0.55rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #feedback-send:hover {
+      background: var(--tint);
+      border-color: var(--text);
+    }
+
+    #feedback-send:disabled {
+      opacity: 0.5;
+      cursor: default;
     }
 
     /* Plain, scrollable page (no cloud background) */
@@ -201,7 +251,6 @@
       background: var(--text);
       color: var(--bg);
     }
-    .options .hidden { display: none; }
 
     /* a little breathing room where the middle octave begins */
     .pad .octave-start {
@@ -241,6 +290,7 @@
     }
 
     .pad .piano .white {
+      border-color: var(--key-edge);
       flex: 1;
       display: flex;
       align-items: flex-end;
@@ -306,18 +356,7 @@
     .pad.solfege .acc,
     .pad.solfege #backspace { grid-row: 2; }
 
-    .options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.1rem 1rem;
-      margin: 0.4rem 0 0;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
 
-    .options label {
-      cursor: pointer;
-    }
 
     .hint {
       margin: 0.5rem 0 0;
@@ -326,6 +365,20 @@
     /* ---------- results ---------- */
     .count {
       margin: 1.1rem 0 0.25rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .did-you-mean {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* "with the same interval" heading between the result groups */
+    .section-head {
+      margin: 1.4rem 0 0.25rem;
       font-size: 0.72rem;
       color: var(--muted);
     }
@@ -432,12 +485,18 @@
     <a href="index.html" class="back">&larr; home</a>
     <button class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
     <main>
-      <h1>melodic association index</h1>
+      <h1>Melodic Association Index</h1>
     </main>
   </div>
 
   <div class="page">
-    <p class="small intro">Type scale degrees (<code>5 1 3</code>), solfège (<code>sol do mi</code>), or tap the keys to find songs that begin that way. Use <code>b3</code>, <code>#4</code> for chromatic notes.</p>
+    <p class="small intro">I built this tool to help myself & my students. Maybe it can help you too. <br><br> Type scale degrees (<code>5 1 3</code>), solfège (<code>sol do mi</code>), or tap the keys to find songs that begin that way. Use <code>b3</code>, <code>#4</code> for chromatic notes. Use <code>5,</code> to indicate a lower octave, and <code>5'</code> to indicate a higher octave. <br><br> This is a work in progress :-) Let me know if you encounter any issues, or have song suggestions to add!
+      <span class="feedback">
+        <input id="feedback-text" type="text" maxlength="500" placeholder="what's missing?" aria-label="Feedback">
+        <button id="feedback-send" type="button">send</button>
+        <span id="feedback-status" role="status" aria-live="polite"></span>
+      </span>
+    </p>
 
     <div class="entry">
       <input id="notes" type="text" placeholder="e.g. 5 1 3" autocomplete="off" spellcheck="false" aria-label="Scale degrees">
@@ -509,10 +568,6 @@
       <button type="button" id="backspace" title="Delete last note">⌫</button>
     </div>
 
-    <div class="options">
-      <label><input type="checkbox" id="collapse"> ignore repeated notes</label>
-      <label id="anykey-label" title="Match the shape of the melody (its intervals) from any starting note"><input type="checkbox" id="anykey"> any key</label>
-    </div>
 
     <p class="count" id="count" aria-live="polite"></p>
     <ul class="results" id="results"></ul>
@@ -526,6 +581,7 @@
     b3, #4 …  flatted / sharped degrees (minor keys use b3, b6, b7)
     5,        a comma after the number = the octave below
     1'        an apostrophe after the number = the octave above
+    8–14      also the octave above: 8 = 1', 9 = 2' … 14 = 7'
   Octave marks only affect playback and display; searching ignores them.
 
   Optional rhythm: one number per note, in beats (1 = quarter note, 0.5 = eighth,
@@ -534,216 +590,218 @@
   Songs without a rhythm play evenly.
   Songs with empty notes ("") are placeholders and stay hidden until filled in
   (see the list at the bottom).
+
+  also: other notes that should find this song too, such as a famous chorus or riff.
+  Write them like the opening, inside the quotes. Separate several with a slash:
+    also: "3 2 1 2 3 3 3"
+    also: "3 2 1 2 3 3 3 / 5 5 6 5"
+  They search the same way as the opening; ▶ still plays the opening.
 */
 const SONGS = [
   // ---------- folk, children's & traditional ----------
-  { title: "Twinkle, Twinkle, Little Star", credit: "Traditional", year: "ca. 1761", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2" },
-  { title: "Mary Had a Little Lamb", credit: "Traditional", year: "ca. 1830", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2" },
-  { title: "Frère Jacques", credit: "Traditional", year: "ca. 1780", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1" },
-  { title: "Row, Row, Row Your Boat", credit: "Traditional", year: "1852", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5" },
-  { title: "Hot Cross Buns", credit: "Traditional", year: "ca. 1798", notes: "3 2 1", rhythm: "1 1 2" },
-  { title: "Three Blind Mice", credit: "Traditional", year: "1609", notes: "3 2 1 3 2 1", rhythm: "1.5 1.5 3 1.5 1.5 3", bpm: 156 },
-  { title: "London Bridge Is Falling Down", credit: "Traditional", year: "ca. 1744", notes: "5 6 5 4 3 4 5", rhythm: "1.5 0.5 1 1 1 1 2" },
-  { title: "Old MacDonald Had a Farm", credit: "Traditional", year: "ca. 1917", notes: "1 1 1 5, 6, 6, 5,", rhythm: "1 1 1 1 1 1 2", bpm: 132 },
-  { title: "Yankee Doodle", credit: "Traditional", year: "ca. 1755", notes: "1 1 2 3 1 3 2 5,", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 120 },
-  { title: "Itsy Bitsy Spider", credit: "Traditional", year: "ca. 1910", notes: "5, 1 1 1 2 3 3" },
-  { title: "Pop Goes the Weasel", credit: "Traditional", year: "ca. 1852", notes: "1 1 2 2 3 5 3 1" },
-  { title: "If You're Happy and You Know It", credit: "Traditional", year: "ca. 1950", notes: "5, 5, 1 1 1 1 1 7, 1 2", rhythm: "0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 1"},
-  { title: "The Wheels on the Bus", credit: "Traditional", year: "1939", notes: "5, 1 1 1 1 3 5 3 1" },
-  { title: "Skip to My Lou", credit: "Traditional", year: "ca. 1844", notes: "3 3 1 1 3 3 5" },
-  { title: "This Old Man", credit: "Traditional", year: "ca. 1870", notes: "5 3 5 5 3 5", rhythm: "1 1 2 1 1 2" },
-  { title: "Clementine", credit: "Traditional", year: "1884", notes: "1 1 1 5, 3 3 3 1", rhythm: "0.75 0.25 1 1 0.75 0.25 1 1" },
-  { title: "She'll Be Comin' Round the Mountain", credit: "Traditional", year: "ca. 1899", notes: "5, 6, 1 1 1 1 6, 5, 3, 5, 1" },
-  { title: "Kumbaya", credit: "Traditional", year: "ca. 1926", notes: "1 3 5 5 5 6 6 5", rhythm: "1 1 1.5 0.5 2 1 1 3"},
-  { title: "Michael, Row the Boat Ashore", credit: "Traditional", year: "ca. 1867", notes: "1 3 5 3 5 6 5" },
-  { title: "Amazing Grace", credit: "Traditional (New Britain)", year: "1835", notes: "5, 1 3 1 3 2 1 6, 5,", rhythm: "1 2 0.5 0.5 2 1 2 1 2", bpm: 96 },
-  { title: "My Bonnie Lies Over the Ocean", credit: "Traditional", year: "ca. 1881", notes: "5, 3 2 1 2 1 6, 5, 3," },
-  { title: "Auld Lang Syne", credit: "Traditional", year: "1788", notes: "5, 1 1 1 3 2 1 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108 },
-  { title: "Shenandoah", credit: "Traditional", year: "ca. 1820", notes: "5, 1 1 1 2 3" },
-  { title: "Danny Boy (Londonderry Air)", credit: "Traditional", year: "1855", notes: "5, 1 2 3 2 3 6 5 3 2 1 6,", rhythm: "1 1 1 3 1 1 1 1 1 1 1 3" },
-  { title: "Home on the Range", credit: "Daniel Kelley", year: "ca. 1872", notes: "5, 5, 1 2 3 1 7, 6, 4, 4, 4," },
-  { title: "Oh! Susanna", credit: "Stephen Foster", year: "1848", notes: "1 2 3 5 5 6 5 3 1 2" },
-  { title: "Camptown Races", credit: "Stephen Foster", year: "1850", notes: "5 5 3 5 6 5 3", rhythm: "1 1 1 1 1 1 2", bpm: 170 },
-  { title: "Simple Gifts", credit: "Joseph Brackett", year: "1848", notes: "5, 5, 1 1 2 3 1 3 4 5" },
-  { title: "You Are My Sunshine", credit: "Jimmie Davis", year: "1940", notes: "5, 1 2 3 3" },
-  { title: "Brahms' Lullaby", credit: "Johannes Brahms", year: "1868", notes: "3 3 5 3 3 5", rhythm: "0.5 0.5 2 0.5 0.5 2", bpm: 86 },
-  { title: "Greensleeves", credit: "Traditional", year: "ca. 1580", mode: "minor", notes: "1 b3 4 5 6 5 4 2 b7,", rhythm: "0.5 1 0.5 0.75 0.25 0.5 1 0.5 1", bpm: 84 },
-  { title: "Scarborough Fair", credit: "Traditional", year: "ca. 1600", mode: "minor", notes: "1 1 5 5 5 2 b3 2 1", rhythm: "2 1 0.5 1.5 1 1.5 0.5 1 3" },
+  { title: "Twinkle, Twinkle, Little Star", credit: "French traditional", year: "ca. 1760s", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2", also: "" },
+  { title: "Go Down Moses", credit: "African-American Spiritual", year: "ca. 1853", notes: "5, b3 b3 2 2 b3 b3 1", rhythm: "1 1 1 1 1 1 1 2", also: "" },
+  { title: "The Parting Glass", credit: "Scottish traditional", year: "ca. 1700s", notes: "3 2 1 6, 6, 5, 6, 1 1 2 2", rhythm: "0.5 0.5 1.5 0.5 0.25 1.25 0.5 1 0.5 0.5 1", also: "" },
+  { title: "Mary Had a Little Lamb", credit: "American traditional", year: "ca. 1830s", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2", also: "" },
+  { title: "Frère Jacques", credit: "French traditional", year: "ca. 1780s", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1", also: "" },
+  { title: "Row, Row, Row Your Boat", credit: "American traditional", year: "ca. 1850s", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5", also: "" },
+  { title: "Hot Cross Buns", credit: "English traditional", year: "ca. 1790s", notes: "3 2 1", rhythm: "1 1 2", also: "" },
+  { title: "Three Blind Mice", credit: "English traditional", year: "ca. 1600s", notes: "3 2 1 3 2 1", rhythm: "1.5 1.5 3 1.5 1.5 3", bpm: 156, also: "" },
+  { title: "London Bridge Is Falling Down", credit: "English traditional", year: "ca. 1740s", notes: "5 6 5 4 3 4 5", rhythm: "1.5 0.5 1 1 1 1 2", also: "" },
+  { title: "Old MacDonald Had a Farm", credit: "American traditional", year: "ca. 1910s", notes: "1 1 1 5, 6, 6, 5,", rhythm: "1 1 1 1 1 1 2", bpm: 132, also: "" },
+  { title: "Yankee Doodle", credit: "American traditional", year: "ca. 1750s", notes: "1 1 2 3 1 3 2", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 120, also: "" },
+  { title: "Itsy Bitsy Spider", credit: "American traditional", year: "ca. 1910s", notes: "5, 1 1 1 2 3 3", rhythm: "0.5 1 0.5 1 0.5 1.5 1", bpm: 150, also: "" },
+  { title: "Pop Goes the Weasel", credit: "English traditional", year: "ca. 1850s", notes: "5 2 4 3 1", rhythm: "3 2 1 3 3", bpm: 300, also: "" },
+  { title: "If You're Happy and You Know It", credit: "Traditional", year: "ca. 1950s", notes: "5, 5, 1 1 1 1 1 1 7, 1 2", rhythm: "0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 0.75 0.25 1", also: "" },
+  { title: "The Wheels on the Bus", credit: "Verna Hills", year: "1939", notes: "5, 1 1 1 1 3 5 3 1", rhythm: "1 1 0.7 0.3 1 1 1 1 2", bpm: 130, also: "" },
+  { title: "Skip to My Lou", credit: "American traditional", year: "ca. 1840s", notes: "3 3 1 1 3 3 5", also: "" },
+  { title: "This Old Man", credit: "English traditional", year: "ca. 1870s", notes: "5 3 5 5 3 5", rhythm: "1 1 2 1 1 2", also: "" },
+  { title: "Clementine", credit: "American traditional", year: "ca. 1880s", notes: "1 1 1 5, 3 3 3 1", rhythm: "0.75 0.25 1 1 0.75 0.25 1 1", also: "" },
+  { title: "She'll Be Comin' Round the Mountain", credit: "American traditional", year: "ca. 1890s", notes: "5, 6, 1 1 1 1 6, 5, 3, 5, 1", rhythm: "0.5 0.5 0.25 0.75 0.75 0.25 0.5 0.5 0.5 0.5 3", also: "" },
+  { title: "Kumbaya", credit: "African-American Spiritual", year: "ca. 1926", notes: "1 3 5 5 5 6 6 5", rhythm: "1 1 1.5 0.5 2 1 1 3", also: "" },
+  { title: "Michael, Row the Boat Ashore", credit: "African-American Spiritual", year: "ca. 1867", notes: "1 3 5 3 5 6 5", rhythm: "1 1 1.7 0.3 0.7 1 2", bpm: 160, also: "" },
+  { title: "Amazing Grace", credit: "John Newton (words), American tune", year: "1835", notes: "5, 1 3 1 3 2 1 6, 5,", rhythm: "1 2 0.5 0.5 2 1 2 1 2", bpm: 96, also: "" },
+  { title: "My Bonnie Lies Over the Ocean", credit: "Scottish traditional", year: "ca. 1880s", notes: "5, 3 2 1 2 1 6, 5, 3,", rhythm: "1 1.5 0.5 1 1 1 1 1 3", bpm: 160, also: "" },
+  { title: "Auld Lang Syne", credit: "Scottish traditional", year: "ca. 1780s", notes: "5, 1 7, 1 3 2 1 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, also: "" },
+  { title: "Shenandoah", credit: "American traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 4 6 5", rhythm: "1 1 1 3 1 1 1 1 3", also: "" },
+  { title: "Danny Boy (Londonderry Air)", credit: "Irish traditional", year: "ca. 1850s", notes: "5, 1 2 3 2 3 6 5 3 2 1 6,", rhythm: "1 1 1 3 1 1 1 1 1 1 1 3", also: "" },
+  { title: "Home on the Range", credit: "Daniel Kelley", year: "ca. 1872", notes: "5 4 3 2 3", rhythm: "3 1 1.5 0.5 3", bpm: 144, also: "" },
+  { title: "Simple Gifts", credit: "Joseph Brackett", year: "1848", notes: "5, 5, 1 1 2 3 1 3 4 5 5 4 3", rhythm: "0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1", also: "" },
+  { title: "You Are My Sunshine", credit: "Jimmie Davis", year: "1940", notes: "5, 1 2 3 3", rhythm: "1 1 1 2 3", bpm: 160, also: "" },
+  { title: "Brahms' Lullaby", credit: "Johannes Brahms", year: "1868", notes: "3 3 5 3 3 5", rhythm: "0.5 0.5 2 0.5 0.5 2", bpm: 86, also: "" },
+  { title: "Greensleeves", credit: "English traditional", year: "ca. 1580s", mode: "minor", notes: "1 b3 4 5 6 5 4 2 b7,", rhythm: "0.5 1 0.5 0.75 0.25 0.5 1 0.5 1", bpm: 84, also: "" },
+  { title: "Scarborough Fair", credit: "English traditional", year: "ca. 1600s", mode: "minor", notes: "1 1 5 5 5 2 b3 2 1", rhythm: "2 1 0.5 1.5 1 1.5 0.5 1 3", also: "" },
 
   // ---------- anthems & occasions ----------
-  { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120 },
-  { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108 },
-  { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108 },
-  { title: "God Save the King / My Country, 'Tis of Thee", credit: "Traditional", year: "ca. 1745", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108 },
-  { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108 },
-  { title: "La Marseillaise", credit: "Rouget de Lisle", year: "1792", notes: "5, 5, 5, 1 1 2 2 5 3" },
-  { title: "When the Saints Go Marching In", credit: "Traditional", year: "ca. 1896", notes: "1 3 4 5", rhythm: "1 1 1 4", bpm: 144 },
-  { title: "Take Me Out to the Ball Game", credit: "Albert Von Tilzer", year: "1908", notes: "1 1' 6 5 3 5 2", rhythm: "2 1 1 1 1 3 3", bpm: 204 },
-  { title: "Bridal Chorus (\"Here Comes the Bride\")", credit: "Richard Wagner", year: "1850", notes: "5, 1 1 1", rhythm: "1 0.75 0.25 2", bpm: 84 },
-  { title: "Taps", credit: "Daniel Butterfield", year: "1862", notes: "5, 5, 1 5, 1 3", rhythm: "0.75 0.25 3 0.75 0.25 3", bpm: 84 },
-  { title: "Westminster Quarters", credit: "Clock chime", year: "1793", notes: "3 1 2 5,", rhythm: "1 1 1 2", bpm: 96 },
-  { title: "NBC Chimes", credit: "Broadcast chime", year: "ca. 1927", notes: "5, 3 1", rhythm: "1 1 2", bpm: 108 },
+  { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120, also: "" },
+  { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108, also: "" },
+  { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, also: "" },
+  { title: "God Save the King / My Country, 'Tis of Thee", credit: "British traditional", year: "ca. 1740s", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108, also: "" },
+  { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108, also: "" },
+  { title: "When the Saints Go Marching In", credit: "American traditional", year: "ca. 1890s", notes: "1 3 4 5", rhythm: "1 1 1 4", bpm: 144, also: "" },
+  { title: "Take Me Out to the Ball Game", credit: "Albert Von Tilzer", year: "1908", notes: "1 1' 6 5 3 5 2", rhythm: "2 1 1 1 1 3 3", bpm: 204, also: "" },
+  { title: "Bridal Chorus (\"Here Comes the Bride\")", credit: "Richard Wagner", year: "1850", notes: "5, 1 1 1", rhythm: "1 0.75 0.25 2", bpm: 84, also: "" },
+  { title: "Taps", credit: "Daniel Butterfield", year: "1862", notes: "5, 5, 1 5, 1 3", rhythm: "0.75 0.25 3 0.75 0.25 3", bpm: 84, also: "" },
+  { title: "Westminster Quarters", credit: "Clock chime", year: "1793", notes: "3 1 2 5, 5, 2 3 1", rhythm: "1 1 1 3 1 1 1 3", bpm: 96, also: "" },
+  { title: "NBC Chimes", credit: "Broadcast chime", year: "ca. 1927", notes: "5, 3 1", rhythm: "1 1 2", bpm: 108, also: "" },
 
   // ---------- holiday ----------
-  { title: "Jingle Bells (chorus)", credit: "James Lord Pierpont", year: "1857", notes: "3 3 3 3 3 3 3 5 1 2 3", rhythm: "1 1 2 1 1 2 1 1 1.5 0.5 4", bpm: 156 },
-  { title: "Jingle Bells (verse)", credit: "James Lord Pierpont", year: "1857", notes: "5, 3 2 1 5,", rhythm: "1 1 1 1 3", bpm: 156 },
-  { title: "Silent Night", credit: "Franz Xaver Gruber", year: "1818", notes: "5 6 5 3", rhythm: "1.5 0.5 1 3", bpm: 84 },
-  { title: "Joy to the World", credit: "arr. Lowell Mason", year: "1839", notes: "1' 7 6 5 4 3 2 1", rhythm: "2 1.5 0.5 3 1 2 2 3", bpm: 132 },
-  { title: "Deck the Halls", credit: "Welsh traditional", year: "ca. 1794", notes: "5 4 3 2 1 2 3 1", rhythm: "1.5 0.5 1 1 1 1 1 1", bpm: 144 },
-  { title: "We Wish You a Merry Christmas", credit: "Traditional", year: "ca. 1800", notes: "5, 1 1 2 1 7, 6,", rhythm: "1 1 0.5 0.5 0.5 0.5 1", bpm: 168 },
-  { title: "O Christmas Tree", credit: "Traditional", year: "1824", notes: "5, 1 1 1 2 3 3 3", rhythm: "1 0.75 0.25 1.5 0.5 0.75 0.25 1.5", bpm: 108 },
-  { title: "Hark! The Herald Angels Sing", credit: "Felix Mendelssohn", year: "1840", notes: "5, 1 1 7, 1 3 3 2", rhythm: "1 1 1.5 0.5 1 1 1 1", bpm: 132 },
-  { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1"},
-  { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120 },
-  { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", bpm: 144 },
-  { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1'", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5" },
-  { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "5 3 4 5 5 5 6 7 1' 1' 1'" },
+  { title: "Jingle Bells (chorus)", credit: "James Lord Pierpont", year: "1857", notes: "3 3 3 3 3 3 3 5 1 2 3", rhythm: "1 1 2 1 1 2 1 1 1.5 0.5 4", bpm: 200, also: "" },
+  { title: "Jingle Bells (beginning)", credit: "James Lord Pierpont", year: "1857", notes: "5, 3 2 1 5,", rhythm: "1 1 1 1 3", bpm: 200, also: "" },
+  { title: "Silent Night", credit: "Franz Xaver Gruber", year: "1818", notes: "5 6 5 3", rhythm: "1.5 0.5 1 3", bpm: 84, also: "" },
+  { title: "Joy to the World", credit: "Watts, Mason, Handel", year: "1839", notes: "1' 7 6 5 4 3 2 1", rhythm: "2 1.5 0.5 3 1 2 2 3", bpm: 200, also: "" },
+  { title: "Deck the Halls", credit: "Welsh traditional", year: "ca. 1790s", notes: "5 4 3 2 1 2 3 1", rhythm: "1.5 0.5 1 1 1 1 1 1", bpm: 144, also: "" },
+  { title: "We Wish You a Merry Christmas", credit: "English traditional", year: "ca. 1800s", notes: "5, 1 1 2 1 7, 6, 6,", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1", bpm: 168, also: "" },
+  { title: "O Christmas Tree", credit: "German traditional", year: "ca. 1820s", notes: "5, 1 1 1 2 3 3 3", rhythm: "1 0.75 0.25 1.5 0.5 0.75 0.25 1.5", bpm: 108, also: "" },
+  { title: "Hark! The Herald Angels Sing", credit: "Felix Mendelssohn", year: "1840", notes: "5, 1 1 7, 1 3 3 2", rhythm: "1 1 1.5 0.5 1 1 1 1", bpm: 132, also: "" },
+  { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1", also: "" },
+  { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120, also: "" },
+  { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", bpm: 144, also: "" },
+  { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1' 7 6 5", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
+  { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "3 5 1 3 2 4 7, 1", rhythm: "1 1 1 1 1 2 1 3", bpm: 130, also: "" },
+  { title: "Santa Baby", credit: "Eartha Kitt", year: "1953", notes: "", also: "" },   // TODO: needs melody
+  { title: "Have Yourself a Merry Little Christmas (ending)", credit: "Judy Garland", year: "1944", notes: "3 3 4, 6, 1 3 2 1 7, 6, 7,", rhythm: "1 1 1 1 1 0.5 0.5 0.5 0.5 1 1", also: "" },   // TODO: needs melody
+
+  // ---------- jazz -----------
+  { title: "There Will Never Be Another You", credit: "Harry Warren", year: "1942", notes: "5 8 7 6 5 1 5 4 2 3 1", rhythm: "0.5 0.5 0.5 0.5 0.25 0.5 0.75 0.5 1 1 2", bpm: 90, also: "" },
+  { title: "Nature Boy", credit: "eden ahbez", year: "1948", notes: "5, 5 b3 1", rhythm: "1 1 1 1", bpm: 120, also: "5 b3 1" },
+  { title: "At Last", credit: "Etta James", year: "1960", notes: "5, 1", rhythm: "2 4", bpm: 120, also: "" },
+
 
   // ---------- classical ----------
-  { title: "Ode to Joy", credit: "Ludwig van Beethoven", year: "1824", notes: "3 3 4 5 5 4 3 2 1 1 2 3", rhythm: "1 1 1 1 1 1 1 1 1 1 1 1", bpm: 132 },
-  { title: "Symphony No. 5", credit: "Ludwig van Beethoven", year: "1808", mode: "minor", notes: "5 5 5 b3", rhythm: "0.5 0.5 0.5 3", bpm: 156 },
-  { title: "Für Elise", credit: "Ludwig van Beethoven", year: "1810", mode: "minor", notes: "5 #4 5 #4 5 2 4 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1.5", bpm: 180 },
-  { title: "Moonlight Sonata", credit: "Ludwig van Beethoven", year: "1801", mode: "minor", notes: "5, 1 b3", rhythm: "1 1 1", bpm: 132 },
-  { title: "Eine kleine Nachtmusik", credit: "W. A. Mozart", year: "1787", notes: "1 5, 1 5, 1 5, 1 3 5", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 156 },
-  { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144 },
-  { title: "Canon in D", credit: "Johann Pachelbel", year: "ca. 1680", notes: "5 3 4 5 3 4 5 5, 6, 7, 1 2 3 4 3", rhythm: "1 0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 108 },
-  { title: "Spring, from The Four Seasons", credit: "Antonio Vivaldi", year: "1725", notes: "1 3 3 3 2 1 5" },
-  { title: "Hallelujah Chorus", credit: "G. F. Handel", year: "1741", notes: "1 5, 6, 5,", rhythm: "1 0.75 0.25 1", bpm: 108 },
-  { title: "Morning Mood", credit: "Edvard Grieg", year: "1875", notes: "5 3 2 1 2 3 5 3 2 1" },
-  { title: "In the Hall of the Mountain King", credit: "Edvard Grieg", year: "1875", mode: "minor", notes: "1 2 b3 4 5 b3 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 144 },
-  { title: "Can-Can (Galop infernal)", credit: "Jacques Offenbach", year: "1858", notes: "1 1 2 4 3 2 5 5 5 6 3 4 2", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1 0.5 0.5 0.5 0.5 1" },
-  { title: "Habanera, from Carmen", credit: "Georges Bizet", year: "1875", mode: "minor", notes: "1' 7 b7 b7 b7 6 b6 5", rhythm: "1 1 0.67 0.67 0.67 1 1 1" },
+  { title: "Ode to Joy", credit: "Ludwig van Beethoven", year: "1824", notes: "3 3 4 5 5 4 3 2 1 1 2 3 3 2 2", rhythm: "1 1 1 1 1 1 1 1 1 1 1 1 1.5 0.5 2", bpm: 132, also: "" },
+  { title: "Symphony No. 5", credit: "Ludwig van Beethoven", year: "1808", mode: "minor", notes: "5 5 5 b3", rhythm: "0.5 0.5 0.5 3", bpm: 156, also: "" },
+  { title: "Für Elise", credit: "Ludwig van Beethoven", year: "1810", mode: "minor", notes: "5 #4 5 #4 5 2 4 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1.5", bpm: 180, also: "" },
+  { title: "Eine kleine Nachtmusik", credit: "W. A. Mozart", year: "1787", notes: "1 5, 1 5, 1 5, 1 3 5", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 156, also: "" },
+  { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144, also: "" },
+  { title: "Canon in D", credit: "Johann Pachelbel", year: "ca. 1680", notes: "5 3 4 5 3 4 5 5, 6, 7, 1 2 3 4 3", rhythm: "1 0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 125, also: "" },
+  { title: "Spring, from The Four Seasons", credit: "Antonio Vivaldi", year: "1725", notes: "1 3 3 3 2 1 5", rhythm: "1 1 1 1 0.5 0.5 3", bpm: 170, also: "" },
+  { title: "Hallelujah Chorus", credit: "G. F. Handel", year: "1741", notes: "1 5, 6, 5,", rhythm: "1.5 0.5 0.5 0.5", bpm: 108, also: "" },
+  { title: "Morning Mood", credit: "Edvard Grieg", year: "1875", notes: "5 3 2 1 2 3 5 3 2 1", also: "" },
+  { title: "In the Hall of the Mountain King", credit: "Edvard Grieg", year: "1875", mode: "minor", notes: "1 2 b3 4 5 b3 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 144, also: "" },
+  { title: "Can-Can (Galop infernal)", credit: "Jacques Offenbach", year: "1858", notes: "1 1 2 4 3 2 5 5 5 6 3 4 2", rhythm: "1 1 0.5 0.5 0.5 0.5 1 1 0.5 0.5 0.5 0.5 1", also: "" },
+  { title: "Habanera, from Carmen", credit: "Georges Bizet", year: "1875", mode: "minor", notes: "1' 7 b7 b7 b7 6 b6 5", rhythm: "1 1 0.67 0.67 0.67 1 1 1", also: "" },
 
   // ---------- stage, screen & games ----------
-  { title: "Over the Rainbow", credit: "Harold Arlen", year: "1939", notes: "1 1' 7 5 6 7 1'", rhythm: "2 2 1 0.5 0.5 1 1", bpm: 96 },
-  { title: "Edelweiss", credit: "Richard Rodgers", year: "1959", notes: "3 5 2'", rhythm: "2 1 3", bpm: 132 },
-  { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", bpm: 144 },
-  { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1", rhythm: "1 1 1 1 2", bpm: 192 },
-  { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5" },
-  { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120 },
-  { title: "The Imperial March", credit: "John Williams", year: "1980", mode: "minor", notes: "1 1 1 b6, b3 1 b6, b3 1", rhythm: "1 1 1 0.75 0.25 1 0.75 0.25 2", bpm: 120 },
-  { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1", rhythm: "1 1", bpm: 84 },
-  { title: "Close Encounters of the Third Kind (motif)", credit: "John Williams", year: "1977", notes: "2 3 1 1, 5,", rhythm: "1 1 1 1 2", bpm: 96 },
-  { title: "Hedwig's Theme", credit: "John Williams", year: "2001", mode: "minor", notes: "5, 1 b3 2 1 5 4 2", rhythm: "1 1.5 0.5 1 2 1 3 3", bpm: 216 },
-  { title: "The Simpsons Theme", credit: "Danny Elfman", year: "1989", notes: "1 #4 5" },
-  { title: "Super Mario Bros. Theme", credit: "Koji Kondo", year: "1985", notes: "3 3 3 1 3 5 5,", rhythm: "0.5 1 1 0.5 1 2 2", bpm: 216 },
-  { title: "Tetris Theme (Korobeiniki)", credit: "Russian traditional", year: "ca. 1861", mode: "minor", notes: "5 2 b3 4 b3 2 1 1 b3 5 4 b3 2", rhythm: "1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1.5", bpm: 168 },
+  { title: "Over the Rainbow", credit: "Harold Arlen", year: "1939", notes: "1 1' 7 5 6 7 1'", rhythm: "2 2 1 0.5 0.5 1 1", bpm: 96, also: "" },
+  { title: "Edelweiss", credit: "Richard Rodgers", year: "1959", notes: "3 5 2' 1' 5 4", rhythm: "2 1 3 2 1 3", bpm: 132, also: "" },
+  { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", bpm: 144, also: "" },
+  { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1 1 5, 1 1 2 1", rhythm: "1 1 1 1 1 1 1 1 1 1 2", bpm: 192, also: "" },
+  { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5", rhythm: "1 1 3", also: "" },
+  { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120, also: "" },
+  { title: "The Imperial March", credit: "John Williams", year: "1980", mode: "minor", notes: "1 1 1 b6, b3 1 b6, b3 1", rhythm: "1 1 1 0.75 0.25 1 0.75 0.25 2", bpm: 120, also: "" },
+  { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1 7, 1 7, 1 7, 1 7, 1", rhythm: "1 3 1 3 1 1 1 1 1 3", bpm: 170, also: "" },
+  { title: "Close Encounters of the Third Kind (motif)", credit: "John Williams", year: "1977", notes: "2 3 1 1, 5,", rhythm: "1 1 1 1 2", bpm: 96, also: "" },
+  { title: "Hedwig's Theme", credit: "John Williams", year: "2001", mode: "minor", notes: "5, 1 b3 2 1 5 4 2", rhythm: "1 1.5 0.5 1 2 1 3 3", bpm: 216, also: "" },
+  { title: "The Simpsons Theme", credit: "Danny Elfman", year: "1989", notes: "1 #4 5", rhythm: "1 2 3", bpm: 80, also: "" },
+  { title: "Super Mario Bros. Theme", credit: "Koji Kondo", year: "1985", notes: "3 3 3 1 3 5 5,", rhythm: "0.5 1 1 0.5 1 2 2", bpm: 216, also: "" },
+  { title: "Tetris Theme (Korobeiniki)", credit: "Russian traditional", year: "ca. 1860s", mode: "minor", notes: "5 2 b3 4 b3 2 1 1 b3 5 4 b3 2", rhythm: "1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1.5", bpm: 168, also: "" },
+  { title: "Somewhere", credit: "West Side Story", year: "1957", notes: "5, 4 3 1 6,", rhythm: "2 2 1.5 0.5 2", bpm: 120, also: "" },
+
 
   // ---------- popular ----------
-  { title: "Yesterday", credit: "The Beatles", year: "1965", notes: "2 1 1", rhythm: "0.5 0.5 3", bpm: 108 },
-  { title: "Hey Jude", credit: "The Beatles", year: "1968", notes: "5 3 3 5 6 2" },
+  { title: "Yesterday", credit: "The Beatles", year: "1965", notes: "2 1 1 3 #4 #5 6 7 1' 7 6 6", rhythm: "0.5 0.25 3.75 0.5 0.5 0.25 0.75 0.5 0.5 1 0.5 2", bpm: 108, also: "" },
+  { title: "Hey Jude", credit: "The Beatles", year: "1968", notes: "5 3 3 5 6 2", rhythm: "1 2.5 0.5 0.5 0.5 3", bpm: 90, also: "" },
+  { title: "Home for a Rest", credit: "Spirit of the West", year: "1990", notes: "5 5 1 1 1 1 1 6 5 4 5", rhythm: "1 1 1 1 1 1 1 1 1 1 1", bpm: 200, also: "" },
+  { title: "Mystery of Love", credit: "Sufjan Stevens", year: "2017", notes: "3 1 3 2 1 6, 5,", rhythm: "1 1 0.5 0.25 0.5 0.75 3", bpm: 120, also: "" },
+  { title: "Everywhere", credit: "Michelle Branch", year: "2001", notes: "1 1 8 7 5 3 3 2", rhythm: "0.25 0.75 1 1 1 0.75 0.25 1", bpm: 120, also: "" },
+  { title: "What Dreams Are Made Of", credit: "Hilary Duff", year: "2003", notes: "3 1 3 2 3", rhythm: "0.5 1.5 0.5 1 2", bpm: 120, also: "" },
+  { title: "Apologize", credit: "OneRepublic", year: "2007", notes: "5 5 6, 1 6, 1 6,", rhythm: "0.5 1 0.5 0.5 0.5 0.5 2", bpm: 120, also: "" },
+  { title: "A Case of You", credit: "Joni Mitchell", year: "1971", notes: "3 5, 3 5, 3 2 2 1 1", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 120, also: "" },
+  { title: "The Only Exception", credit: "Paramore", year: "2009", notes: "3 5, 5, 1 2 3 3 2", rhythm: "3 2.7 0.3 1 0.7 1 1 2", bpm: 120, also: "" },
+
 
   // 1960s
-  { title: "Fly Me to the Moon", credit: "Frank Sinatra", year: "1964", notes: "1' 7 6 5 4" },
-  { title: "The Sound of Silence", credit: "Simon & Garfunkel", year: "1965", mode: "minor", notes: "1 1 b3 b3 5 5 4" },
-  { title: "The Pink Panther Theme", credit: "Henry Mancini", year: "1963", mode: "minor", notes: "7, 1 2 b3 7, 1 2 b3" },
-  { title: "Mission: Impossible Theme", credit: "Lalo Schifrin", year: "1966", mode: "minor", notes: "1 1 b3 4 1 1 b7, 7," },
+  { title: "Fly Me to the Moon", credit: "Frank Sinatra", year: "1964", notes: "1' 7 6 5 4", rhythm: "1 1 1 0.7 3", bpm: 120, also: "" },
+  { title: "The Sound of Silence", credit: "Simon & Garfunkel", year: "1965", mode: "minor", notes: "1 1 b3 b3 5 5 4", rhythm: "0.25 0.75 0.5 0.5 0.5 0.5 2", also: "" },
+  { title: "The Pink Panther Theme", credit: "Henry Mancini", year: "1963", mode: "minor", notes: "7, 1 2 b3 7, 1 2 b3 b6 5", rhythm: "0.3 1.7 0.3 1.7 0.3 0.7 0.3 0.7 0.3 1", bpm: 110, also: "" },
+  { title: "Mission: Impossible Theme", credit: "Lalo Schifrin", year: "1966", mode: "minor", notes: "1 1 b3 4 1 1 b7, 7,", rhythm: "1.5 1.5 1 1 1.5 1.5 1 1", bpm: 170, also: "" },
 
   // 1970s
-  { title: "Smoke on the Water (riff)", credit: "Deep Purple", year: "1972", mode: "minor", notes: "1 b3 4 1 b3 b5 4 1 b3 4 b3 1" },
+  { title: "Smoke on the Water (riff)", credit: "Deep Purple", year: "1972", mode: "minor", notes: "1 b3 4 1 b3 b5 4 1 b3 4 b3 1", rhythm: "1 1 1.5 1 1 0.5 2 1 1 1.5 1 3", bpm: 112, also: "" },
 
   // 1980s
-  { title: "Under Pressure (bass riff)", credit: "Queen & David Bowie", year: "1981", notes: "1 1 1 1 1 5, 1" },
-  { title: "Eye of the Tiger (riff)", credit: "Survivor", year: "1982", mode: "minor", notes: "1 1 b7, 1 1 b7, 1 1 b7, b6,", rhythm: "2 0.7 0.7 2.7 0.7 0.7 2.7 0.7 0.7 3" },
-  { title: "Billie Jean", credit: "Michael Jackson", year: "1983", mode: "minor", notes: "1 1 b7, 5, 1 1 b7, 5,", rhythm: "0.5 0.5 1 1 0.5 1 1 0.5" },
-  { title: "Take On Me (synth riff)", credit: "a-ha", year: "1985", notes: "6 6 4 2 2 5 5 5 7 7 1' 2' 1'" },
-  { title: "The Final Countdown (synth riff)", credit: "Europe", year: "1986", mode: "minor", notes: "5 4 5 1 b6 5 b6 5 4", rhythm: "0.25 0.25 1 2.5 0.25 0.25 0.5 0.5 2" },
-  { title: "Sweet Child o' Mine (riff)", credit: "Guns N' Roses", year: "1987", notes: "1 1' 5 4 4' 5 3' 5" },
+  { title: "Under Pressure (bass riff)", credit: "Queen & David Bowie", year: "1981", notes: "1 1 1 1 1 5,", rhythm: "1 1 1 0.5 0.5 1 2", bpm: 300, also: "" },
+  { title: "Eye of the Tiger (riff)", credit: "Survivor", year: "1982", mode: "minor", notes: "1 1 b7, 1 1 b7, 1 1 b7, b6,", rhythm: "2 0.7 0.7 2.7 0.7 0.7 2.7 0.7 0.7 3", also: "" },
+  { title: "Billie Jean", credit: "Michael Jackson", year: "1983", mode: "minor", notes: "1 1 b7, 5, 1 1 b7, 5,", rhythm: "0.5 0.5 1 1 0.5 1 1 0.5", also: "" },
+  { title: "Take On Me (chorus)", credit: "a-ha", year: "1985", notes: "1 7 1' 1 5 6", rhythm: "1 1 2 1 1 2", bpm: 60, also: "" },
+  { title: "The Final Countdown (synth riff)", credit: "Europe", year: "1986", mode: "minor", notes: "5 4 5 1 b6 5 b6 5 4", rhythm: "0.25 0.25 1 2.5 0.25 0.25 0.5 0.5 2", also: "" },
+  { title: "Sweet Child o' Mine (riff)", credit: "Guns N' Roses", year: "1987", notes: "1 1' 5 4 4' 5 3' 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 125, also: "" },
 
   // 1990s
-  { title: "Smells Like Teen Spirit (guitar riff)", credit: "Nirvana", year: "1991", mode: "minor", notes: "1 4 b3 b6" },
-  { title: "My Heart Will Go On", credit: "Céline Dion", year: "1997", notes: "1 1 1 1 7, 1 1 7, 1 2 3 2" },
+  { title: "Smells Like Teen Spirit (riff)", credit: "Nirvana", year: "1991", mode: "minor", notes: "1 1 4 4 b3 b3 b6 b6", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", also: "" },
 
   // 2000s
-  { title: "Clocks (piano riff)", credit: "Coldplay", year: "2002", notes: "1' 5 3 1' 5 3 1' 5" },
-  { title: "Seven Nation Army (riff)", credit: "The White Stripes", year: "2003", mode: "minor", notes: "1 1 b3 1 b7, b6, 5," },
+  { title: "Clocks (piano riff)", credit: "Coldplay", year: "2002", notes: "1' 5 3 1' 5 3 1' 5", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5", bpm: 130, also: "" },
+  { title: "Seven Nation Army (riff)", credit: "The White Stripes", year: "2003", mode: "minor", notes: "1 1 b3 1 b7, b6, 5,", rhythm: "1.5 0.5 0.75 0.75 0.5 2 2", bpm: 124, also: "" },
   // ---------- ✍️ waiting for melodies ----------
   // These don't show on the page until their notes are filled in.
   // Add the opening notes (and mode: "minor" if needed); rhythm and bpm are optional.
 
   // 1960s
-  { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3" },
-  { title: "Moon River", credit: "Audrey Hepburn", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5" },
-  { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6" },
-  { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "" },
-  { title: "My Girl", credit: "The Temptations", year: "1964", notes: "" },
-  { title: "Unchained Melody", credit: "The Righteous Brothers", year: "1965", notes: "" },
-  { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "" },
-  { title: "Respect", credit: "Aretha Franklin", year: "1967", notes: "" },
-  { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "" },
-  { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "" },
+  { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", also: "" },
+  { title: "Moon River", credit: "Audrey Hepburn", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", also: "" },
+  { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6", also: "" },
+  { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "8 7 6 5 4 5 4 3 2 3 2 1", rhythm: "0.5 0.5 0.5 1 1 0.75 0.25 0.75 0.25 0.25 0.25 1", also: "" },
+  { title: "My Girl", credit: "The Temptations", year: "1964", notes: "", also: "" },   // TODO: needs melody
+  { title: "Unchained Melody", credit: "The Righteous Brothers", year: "1965", notes: "", also: "" },   // TODO: needs melody
+  { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "", also: "" },   // TODO: needs melody
+  { title: "What the World Needs Now Is Love", credit: "Jackie DeShannon", year: "1965", notes: "1 1 5 5 3", rhythm: "0.7 0.3 2 1 3", also: "" },
+  { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "5, 7, 1 1 5", rhythm: "0.7 0.3 1.7 0.3 2", bpm: 70, also: "" },
+  { title: "Blackbird", credit: "The Beatles", year: "1968", notes: "1 1 1 1 1 1 1 5 5", rhythm: "0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.75 2", also: "" },
+  { title: "In My Life", credit: "The Beatles", year: "1968", notes: "3 1' 3 4 5 7", rhythm: "1 1 0.5 0.5 0.5 3", also: "" },  
+  { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "3 2 3 1", rhythm: "0.5 1 1 2", also: "" },
+  { title: "Come Together", credit: "The Beatles", year: "1969", notes: "1 1 5 3", rhythm: "0.5 0.25 0.5 2", also: "" }, 
+  { title: "Oh! Darling", credit: "The Beatles", year: "1969", notes: "6 8 6 5", rhythm: "2 1 2 1", bpm: 160, also: "" },
 
   // 1970s
-  { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "" },
-  { title: "Bridge Over Troubled Water", credit: "Simon & Garfunkel", year: "1970", notes: "" },
-  { title: "Imagine", credit: "John Lennon", year: "1971", notes: "" },
-  { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "" },
-  { title: "Superstition", credit: "Stevie Wonder", year: "1972", notes: "" },
-  { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "" },
-  { title: "Bohemian Rhapsody", credit: "Queen", year: "1975", notes: "" },
-  { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "" },
-  { title: "Stayin' Alive", credit: "Bee Gees", year: "1977", notes: "" },
-  { title: "September", credit: "Earth, Wind & Fire", year: "1978", notes: "" },
+  { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "5 5 5 5 6 3 5 5 8 9", also: "", rhythm: "0.5 0.5 1 0.5 1 1 1.5 1 0.5 1.5", bpm: 150 },
+  { title: "Bridge Over Troubled Water", credit: "Simon & Garfunkel", year: "1970", notes: "", also: "" },
+  { title: "Imagine", credit: "John Lennon", year: "1971", notes: "6, 1 6, 1 3 3 2", rhythm: "0.5 1 0.5 2.5 1 1 2", also: "" },
+  { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "3 2 1", also: "" },
+  { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", also: "" },
+  { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", also: "" },
+  { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", also: "" },
 
   // 1980s
-  { title: "Another One Bites the Dust", credit: "Queen", year: "1980", notes: "" },
-  { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "" },
-  { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "" },
-  { title: "Every Breath You Take", credit: "The Police", year: "1983", notes: "" },
-  { title: "Girls Just Want to Have Fun", credit: "Cyndi Lauper", year: "1983", notes: "" },
-  { title: "Time After Time", credit: "Cyndi Lauper", year: "1984", notes: "" },
-  { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "" },
-  { title: "Livin' on a Prayer", credit: "Bon Jovi", year: "1986", notes: "" },
-  { title: "Don't Worry, Be Happy", credit: "Bobby McFerrin", year: "1988", notes: "" },
-  { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "" },
+  { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "3 1 2 2 3", rhythm: "0.5 0.5 0.5 1 1", also: "" },
+  { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "b3 1", rhythm: "0.5 0.5", also: "" },
+  { title: "Sweet Dreams (Are Made of This)", credit: "Eurythmics", year: "1983", notes: "b3 b3 1 b3 b3 b3 2", rhythm: "1 1 1 0.5 1 0.5 2", also: "" },
+  { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "3 5 6 3 5 6 3 1", rhythm: "0.7 1 2 0.3 1 0.7 1 1", also: "" },
+  { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "", also: "" },   // TODO: needs melody
 
   // 1990s
-  { title: "Vogue", credit: "Madonna", year: "1990", notes: "" },
-  { title: "I Will Always Love You", credit: "Whitney Houston", year: "1992", notes: "" },
-  { title: "Creep", credit: "Radiohead", year: "1992", notes: "" },
-  { title: "Wonderwall", credit: "Oasis", year: "1995", notes: "" },
-  { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "" },
-  { title: "Wannabe", credit: "Spice Girls", year: "1996", notes: "" },
-  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "" },
-  { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "" },
-  { title: "Believe", credit: "Cher", year: "1998", notes: "" },
-  { title: "No Scrubs", credit: "TLC", year: "1999", notes: "" },
+  { title: "Vogue", credit: "Madonna", year: "1990", notes: "", also: "" },   // TODO: needs melody
+  { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", also: "" },
+  { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", also: "" },  
+  { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25", bpm: 80, also: "" }, 
+  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "", also: "" },   // TODO: needs melody
+  { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", also: "" },
+  { title: "Believe", credit: "Cher", year: "1998", notes: "5, 5, 5, 3 2 2 2 2 1 2", rhythm: "0.5 0.5 1 0.5 1 0.5 1 0.5 0.5 1", also: "" },
 
   // 2000s
-  { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "" },
-  { title: "Crazy in Love", credit: "Beyoncé", year: "2003", notes: "" },
-  { title: "Hey Ya!", credit: "OutKast", year: "2003", notes: "" },
-  { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "" },
-  { title: "Hey There Delilah", credit: "Plain White T's", year: "2006", notes: "" },
-  { title: "Umbrella", credit: "Rihanna", year: "2007", notes: "" },
-  { title: "Viva la Vida", credit: "Coldplay", year: "2008", notes: "" },
-  { title: "Poker Face", credit: "Lady Gaga", year: "2008", notes: "" },
-  { title: "Single Ladies (Put a Ring on It)", credit: "Beyoncé", year: "2008", notes: "" },
-  { title: "I Gotta Feeling", credit: "The Black Eyed Peas", year: "2009", notes: "" },
+  { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "5 1 7, 1 2 1", rhythm: "1 1 0.5 0.5 0.5 1", also: "" },
+  { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "3 2 1 2 1", rhythm: "1 1 1 2 2", also: "" },
+  { title: "Toxic", credit: "Britney Spears", year: "2003", notes: "5 2 b3 2 1", rhythm: "1 1 0.5 0.5 1", also: "" },
+  { title: "Halo", credit: "Beyoncé", year: "2008", notes: "8 8 8 8 8 8 8 5 4 3", rhythm: "0.25 0.25 0.25 0.25 0.5 0.25 0.5 0.25 0.25 1", bpm: 90, also: "" },
 
   // 2010s
-  { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "" },
-  { title: "Someone Like You", credit: "Adele", year: "2011", notes: "" },
-  { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "" },
-  { title: "Somebody That I Used to Know", credit: "Gotye", year: "2011", notes: "" },
-  { title: "Royals", credit: "Lorde", year: "2013", notes: "" },
-  { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "" },
-  { title: "Happy", credit: "Pharrell Williams", year: "2013", notes: "" },
-  { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "" },
-  { title: "Uptown Funk", credit: "Mark Ronson ft. Bruno Mars", year: "2014", notes: "" },
-  { title: "Shape of You", credit: "Ed Sheeran", year: "2017", notes: "" },
+  { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "b7 5 b7 5 1' 2' b7", rhythm: "0.5 0.5 0.5 0.5 3 0.5 3", also: "b7 5 1'" },
+  { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "1 3, 5, 1 5,", rhythm: "1 0.25 0.5 0.75 0.5", also: "" },
+  { title: "Royals", credit: "Lorde", year: "2013", notes: "5 3", bpm: 60, also: "" },
+  { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "6 7 1' 5 5 2'", rhythm: "0.5 0.5 3 0.5 0.5 3.5", also: "" },
+  { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "2 3 1", rhythm: "0.5 0.5 2", also: "" },
+  { title: "Uptown Funk (riff)", credit: "Mark Ronson ft. Bruno Mars", year: "2014", notes: "1 1 4 b3 1 4 b3 b7, 1", rhythm: "3.5 0.5 0.75 0.75 0.5 0.75 0.75 0.5 2", also: "1 4 b3" },
 
   // 2020s
-  { title: "Blinding Lights", credit: "The Weeknd", year: "2019", notes: "" },
-  { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "" },
-  { title: "Levitating", credit: "Dua Lipa", year: "2020", notes: "" },
-  { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "" },
-  { title: "good 4 u", credit: "Olivia Rodrigo", year: "2021", notes: "" },
-  { title: "As It Was", credit: "Harry Styles", year: "2022", notes: "" },
-  { title: "Anti-Hero", credit: "Taylor Swift", year: "2022", notes: "" },
-  { title: "Flowers", credit: "Miley Cyrus", year: "2023", notes: "" },
-  { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "" },
-  { title: "Birds of a Feather", credit: "Billie Eilish", year: "2024", notes: "" },
+  { title: "Blinding Lights (riff)", credit: "The Weeknd", year: "2019", notes: "1 1 b7, 1 2 5, b7,", rhythm: "2 1.5 0.5 0.5 1 1 2", also: "" },
+  { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "6, 1 2 2 1", rhythm: "0.5 0.5 1 0.25 0.75", bpm: 100, also: "" },
+  { title: "Levitating", credit: "Dua Lipa", year: "2020", notes: "", also: "" },   // TODO: needs melody
+  { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "3 5 5 4 3 2 2 1", rhythm: "0.5 1 1.5 0.5 1.5 0.5 1 1", also: "" },
+  { title: "vampire (beginning)", credit: "Olivia Rodrigo", year: "2021", notes: "5 3 5 3 5 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", also: "" },
+  { title: "vampire (chorus)", credit: "Olivia Rodrigo", year: "2021", notes: "3 2 1 6, 3 3 3", rhythm: "0.5 1.5 1 1 1 1 1", also: "6 3" },
+  { title: "Anti-Hero (chorus)", credit: "Taylor Swift", year: "2022", notes: "1 3 3", rhythm: "0.5 2 2", also: "" },
+  { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "b3 b3 b3 5 1 1 1 2 b7, b7, b7, 2 b3 2 1", rhythm: "0.25 0.25 0.5 1 0.25 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
 ];
 
 /* ---------- parsing ---------- */
@@ -768,12 +826,15 @@ function parseToken(tok) {
   const marks = tok.match(/[,']*$/)[0];            // octave marks also work after solfège: do'
   const core = tok.slice(0, tok.length - marks.length);
   if (SOLFEGE[core]) tok = SOLFEGE[core] + marks;
-  const m = tok.match(/^([b#]*)([1-7])([,']*)$/);
+  // degrees 1–7, plus 8–14 for the octave above (8 = 1', 9 = 2', … 14 = 7')
+  const m = tok.match(/^([b#]*)(1[0-4]|[1-9])([,']*)$/);
   if (!m) return null;
-  let pc = BASE[m[2]];
+  let num = +m[2], up = 0;
+  if (num > 7) { num -= 7; up = 1; }
+  let pc = BASE[num];
   for (const c of m[1]) pc += c === '#' ? 1 : -1;
-  const oct = (m[3].match(/'/g) || []).length - (m[3].match(/,/g) || []).length;
-  return { pc: (pc + 12) % 12, oct, label: m[1].replace(/b/g, '♭').replace(/#/g, '♯') + m[2] };
+  const oct = up + (m[3].match(/'/g) || []).length - (m[3].match(/,/g) || []).length;
+  return { pc: (pc + 12) % 12, oct, label: m[1].replace(/b/g, '♭').replace(/#/g, '♯') + num };
 }
 
 /* intervals: ↑P4, ↓m3, P1 … (also + / - for up / down) */
@@ -793,7 +854,7 @@ function parseInput(text) {
   text = text.trim();
   if (!text) return [];
   let tokens = text.match(/[↑↓+^-]?[^\s,↑↓-]+,*/g) || [];
-  if (tokens.length === 1 && /^[1-7]{2,}$/.test(tokens[0])) tokens = tokens[0].split('');
+  if (tokens.length === 1 && /^[1-9]{2,}$/.test(tokens[0])) tokens = tokens[0].split('');   // "5189" = 5 1 8 9
   const ints = tokens.map(parseInterval);
   if (!ints.includes(null)) return ints;
   const notes = tokens.map(t => parseToken(t.replace(/^-/, '')));
@@ -822,8 +883,8 @@ function notePitches(notes) {
 function searchIntervals(steps, opts) {
   const q = opts.collapse ? steps.filter(d => d !== 0) : steps;
   const out = [];
-  for (const song of SONGS) {
-    let notes = song.parsed.map((n, i) => ({ p: pitch(n), i }));
+  songs: for (const song of SONGS) for (const seqNotes of [song.parsed, ...song.alt]) {
+    let notes = seqNotes.map((n, i) => ({ p: pitch(n), i }));
     if (opts.collapse) notes = notes.filter((x, k) => k === 0 || x.p !== notes[k - 1].p);
     const diffs = notes.slice(1).map((x, k) => x.p - notes[k].p);
     const starts = opts.anywhere ? diffs.map((_, k) => k) : [0];
@@ -831,20 +892,37 @@ function searchIntervals(steps, opts) {
       if (at + q.length <= diffs.length && q.every((d, j) => diffs[at + j] === d)) {
         const hitIdx = new Set();
         for (let i = notes[at].i; i <= notes[at + q.length].i; i++) hitIdx.add(i);
-        out.push({ song, at, hitIdx, tonic: null, extra: diffs.length - q.length });
-        break;
+        out.push({ song, notes: seqNotes, at, hitIdx, tonic: null, extra: diffs.length - q.length });
+        continue songs;
       }
     }
   }
-  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || a.song.title.localeCompare(b.song.title));
+  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || byTitle(a.song, b.song));
   return out;
 }
 
 const collapse = arr => arr.filter((n, i) => i === 0 || n.pc !== arr[i - 1].pc);
 
+// alphabetical order that ignores a leading "The", "A" or "An" and any punctuation
+const sortKey = title => title.toLowerCase()
+  .replace(/^[^\p{L}\p{N}]+/u, '')          // leading punctuation first ("...Baby")
+  .replace(/^(the|a|an)\s+/, '')
+  .replace(/[^\p{L}\p{N}\s]/gu, '')
+  .trim();
+const byTitle = (a, b) => sortKey(a.title).localeCompare(sortKey(b.title));
+
 // placeholders with no notes yet are left out quietly
 for (let i = SONGS.length - 1; i >= 0; i--) if (!SONGS[i].notes.trim()) SONGS.splice(i, 1);
 SONGS.forEach(s => { s.parsed = s.notes.trim().split(/\s+/).map(parseToken); });
+// extra sequences that also find the song (the "also" list); unreadable ones are skipped with a note
+SONGS.forEach(s => {
+  const list = Array.isArray(s.also) ? s.also : String(s.also || '').split('/');
+  s.alt = list.filter(a => a.trim()).map(a => {
+    const parsed = a.trim().split(/\s+/).map(parseToken);
+    if (parsed.includes(null)) { console.warn(`"${s.title}": couldn't read also-notes "${a}"`); return null; }
+    return parsed;
+  }).filter(Boolean);
+});
 // a song with a typo in its notes is skipped (and named in the console) instead of breaking the whole list
 for (let i = SONGS.length - 1; i >= 0; i--) {
   if (SONGS[i].parsed.includes(null)) {
@@ -858,8 +936,8 @@ const step = (a, b) => (b.pc - a.pc + 12) % 12;
 
 function search(query, opts) {
   const out = [];
-  for (const song of SONGS) {
-    const seq = opts.collapse ? collapse(song.parsed) : song.parsed;
+  songs: for (const song of SONGS) for (const seqNotes of [song.parsed, ...song.alt]) {
+    const seq = opts.collapse ? collapse(seqNotes) : seqNotes;
     const q = opts.collapse ? collapse(query) : query;
     const starts = opts.anywhere ? seq.map((_, i) => i) : [0];
     // degrees: every note must be the same scale degree
@@ -873,8 +951,8 @@ function search(query, opts) {
         const hitIdx = new Set();
         if (opts.collapse) {
           let k = -1;
-          song.parsed.forEach((n, i) => {
-            if (i === 0 || n.pc !== song.parsed[i - 1].pc) k++;
+          seqNotes.forEach((n, i) => {
+            if (i === 0 || n.pc !== seqNotes[i - 1].pc) k++;
             if (k >= at && k < at + q.length) hitIdx.add(i);
           });
         } else {
@@ -882,13 +960,13 @@ function search(query, opts) {
         }
         // the key the person played in: their first note minus the song's matched degree
         const tonic = opts.intervals ? (q[0].pc - seq[at].pc + 12) % 12 : null;
-        out.push({ song, at, hitIdx, tonic, extra: seq.length - q.length });
-        break;
+        out.push({ song, notes: seqNotes, at, hitIdx, tonic, extra: seq.length - q.length });
+        continue songs;
       }
     }
   }
   // best first: matches at the very start, then shortest leftover, then alphabetical
-  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || a.song.title.localeCompare(b.song.title));
+  out.sort((a, b) => (a.at - b.at) || (a.extra - b.extra) || byTitle(a.song, b.song));
   return out;
 }
 
@@ -954,8 +1032,6 @@ function playNotes(notes, rhythm, bpm = 120) {
 const input = document.getElementById('notes');
 const results = document.getElementById('results');
 const count = document.getElementById('count');
-const collapseBox = document.getElementById('collapse');
-const anykeyBox = document.getElementById('anykey');
 let accidental = '';
 
 /* ---------- keypad modes: numbers, solfège, piano ---------- */
@@ -996,7 +1072,6 @@ function applyMode(rewrite = true) {
   pad.querySelectorAll('.quality-key').forEach(b => b.classList.toggle('on', b.dataset.q === quality));
   pad.classList.toggle('piano-mode', mode === 'piano');
   pad.classList.toggle('interval-mode', mode === 'intervals');
-  document.getElementById('anykey-label').classList.toggle('hidden', mode === 'intervals' || mode === 'piano');
   clearPending();
   const next = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
   const toggle = document.getElementById('mode-toggle');
@@ -1023,7 +1098,6 @@ function applyMode(rewrite = true) {
         const base = mode === 'piano' ? SHARP_NAMES[pc] : mode === 'solfege' ? SYLLABLES[pc] : DEG_LABEL[pc];
         return base + (oct > 0 ? "'".repeat(oct) : ','.repeat(-oct));
       }).join(' ');
-      if (mode !== 'piano') anykeyBox.checked = true;
     } else if (!isIntervals(parsed)) {
       input.value = parsed.map(spell).join(' ');
     }
@@ -1047,8 +1121,8 @@ function addNote(tok) {
   playNotes([note]);
 }
 
-function degreesHTML(song, hitIdx) {
-  return song.parsed.map((n, i) => {
+function degreesHTML(notes, hitIdx) {
+  return notes.map((n, i) => {
     const cls = ['deg', n.oct < 0 ? 'low' : n.oct > 0 ? 'high' : '', hitIdx.has(i) ? 'hit' : ''].join(' ').trim();
     return `<span class="${cls}">${labelFor(n)}</span>`;
   }).join('');
@@ -1061,34 +1135,129 @@ function render() {
     count.textContent = "Hmm, I can't read that. Try numbers 1–7 (with b or # if needed), solfège, note names like E D# E, or intervals like ↑P4 ↓m2.";
     return;
   }
-  if (isIntervals(query)) return renderList(
-    searchIntervals(query.map(x => x.semis), { collapse: collapseBox.checked }),
-    query, `starting with ${query.map(x => intervalToken(x.semis)).join(' ')}`);
+  // repeated notes are always ignored, so P1 (a repeat) on its own isn't enough to search
+  if (isIntervals(query)) {
+    if (!query.some(x => x.semis !== 0)) {
+      count.textContent = 'Add an interval that moves (P1 just repeats a note)';
+      return;
+    }
+    return renderList(
+      searchIntervals(query.map(x => x.semis), { collapse: true }),
+      query, `with ${query.map(x => intervalToken(x.semis)).join(' ')}`);
+  }
 
-  // played or typed note names (from the piano) always search by shape, in any key
-  const intervals = query.some(n => n.kind === 'note') || anykeyBox.checked;
-  const searching = query.length && !(intervals && query.length < 2);
-  const list = searching
-    ? search(query, { collapse: collapseBox.checked, intervals })
-    : SONGS.map(song => ({ song, hitIdx: new Set() })).sort((a, b) => a.song.title.localeCompare(b.song.title));
+  // repeated notes are always ignored, so "1 1" counts as one note; a shape needs two different notes
+  const pitches = query.map(pitch);                       // exactly as typed, octaves included
+  const moves = pitches.slice(1).map((p, i) => p - pitches[i]).filter(d => d !== 0);
+  const showNote = n => labelFor(n) + (n.oct > 0 ? "'".repeat(n.oct) : ','.repeat(-n.oct));
+  const shown = query.map(showNote).join(' ');
+  if (!moves.length) {
+    count.textContent = query.length ? `Add one more note to search by the shape of ${shown}` : '';
+    return;
+  }
+  const plural = n => `${n} ${n === 1 ? 'song' : 'songs'}`;
+  const isNames = query.some(n => n.kind === 'note');   // piano / note names: no scale degrees
+  const seen = new Set();
+  const fresh = list => list.filter(r => !seen.has(r.song) && seen.add(r.song));
 
-  const shown = query.map(labelFor).join(' ');
-  count.textContent = !query.length ? `All ${list.length} songs`
-    : !searching ? `Play one more note to match the shape of ${shown} in any key`
-    : `${list.length} ${list.length === 1 ? 'song' : 'songs'} starting with ${shown}${intervals ? ' (any key)' : ''}`;
-  renderList(list, query, null);
+  // other octave readings of the same notes (e.g. "1 7" → "1 7,", "1 3 5" → "1 3, 5,"),
+  // offered as "did you mean": each note after the first may sit an octave up or down
+  const variants = [];
+  if (query.length <= 8) {
+    const build = (i, octs) => {
+      if (i === query.length) {
+        if (octs.some((o, k) => o !== query[k].oct)) variants.push(query.map((n, k) => ({ ...n, oct: octs[k] })));
+        return;
+      }
+      // a repeated note keeps the octave of the one before it
+      const opts = i === 0 ? [query[0].oct]
+        : query[i].pc === query[i - 1].pc ? [octs[i - 1]]
+        : [query[i].oct, query[i].oct - 1, query[i].oct + 1];
+      for (const o of opts) build(i + 1, [...octs, o]);
+    };
+    build(0, []);
+  }
+  // smallest total leap first, so the most natural reading is suggested first
+  const leap = q => q.map(pitch).reduce((sum, p, i, arr) => sum + (i ? Math.abs(p - arr[i - 1]) : 0), 0);
+  variants.sort((a, b) => leap(a) - leap(b));
+
+  // 1. exactly these notes (scale degrees + octaves); for note names, the shape in any key
+  const main = fresh(isNames ? searchIntervals(moves, { collapse: true }) : searchExact(pitches));
+  count.textContent = main.length
+    ? `${plural(main.length)} with ${shown}`
+    : `No songs with exactly ${shown}`;
+  renderList(main, query, null);
+
+  // 2. "did you mean …?" for each other octave reading that finds songs (up to 3)
+  let suggestions = 0;
+  for (const altQuery of variants) {
+    if (suggestions >= 3) break;
+    const altPitches = altQuery.map(pitch);
+    const altMoves = altPitches.slice(1).map((p, i) => p - altPitches[i]).filter(d => d !== 0);
+    if (!altMoves.length) continue;
+    const alt = fresh(isNames ? searchIntervals(altMoves, { collapse: true }) : searchExact(altPitches));
+    if (!alt.length) continue;
+    suggestions++;
+    const head = document.createElement('li');
+    head.className = 'section-head';
+    const link = document.createElement('a');
+    link.href = '#';
+    link.className = 'did-you-mean';
+    link.textContent = altQuery.map(showNote).join(' ');
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      input.value = altQuery.map(spell).join(' ');
+      render();
+    });
+    head.append('Did you mean ', link, `? · ${plural(alt.length)}`);
+    results.append(head);
+    renderList(alt, altQuery, null);
+  }
+
+  // 3. the same ups and downs in another key or on other scale degrees
+  if (!isNames) {
+    const sameShape = fresh(searchIntervals(moves, { collapse: true }));
+    if (sameShape.length) {
+      const head = document.createElement('li');
+      head.className = 'section-head';
+      head.textContent = `With the same ${moves.length === 1 ? 'interval' : 'intervals'} · ${plural(sameShape.length)}`;
+      results.append(head);
+      renderList(sameShape, query, null);
+    }
+  }
+}
+
+// exact match: same scale degrees and the same ups and downs (the whole tune may sit an octave higher or lower)
+function searchExact(qPitches) {
+  const q = qPitches.filter((p, i) => i === 0 || p !== qPitches[i - 1]);
+  const out = [];
+  songs: for (const song of SONGS) for (const seqNotes of [song.parsed, ...song.alt]) {
+    let notes = seqNotes.map((n, i) => ({ p: pitch(n), i }));
+    notes = notes.filter((x, k) => k === 0 || x.p !== notes[k - 1].p);
+    if (notes.length < q.length) continue;
+    const offset = notes[0].p - q[0];
+    if (offset % 12 !== 0 || !q.every((p, k) => notes[k].p - p === offset)) continue;
+    const hitIdx = new Set();
+    for (let i = notes[0].i; i <= notes[q.length - 1].i; i++) hitIdx.add(i);
+    out.push({ song, notes: seqNotes, at: 0, hitIdx, extra: notes.length - q.length });
+    continue songs;
+  }
+  out.sort((a, b) => (a.extra - b.extra) || byTitle(a.song, b.song));
+  return out;
 }
 
 function renderList(list, query, description) {
   if (description !== null) count.textContent = `${list.length} ${list.length === 1 ? 'song' : 'songs'} ${description}`;
-  for (const { song, hitIdx, tonic } of list) {
+  for (const { song, notes, hitIdx } of list) {
+    // always show the song's opening; only bold it when the opening itself matched (not an "also" line)
+    const matchedOpening = !notes || notes === song.parsed;
     const li = document.createElement('li');
     li.className = 'song';
     li.innerHTML = `
       <button class="song-play" type="button" title="Play the opening">▶</button>
       <div class="song-main">
         <span class="song-name"><p class="song-title"></p><span class="song-credit"></span></span>
-        <span class="degrees">${degreesHTML(song, hitIdx)}</span>
+        <span class="degrees">${degreesHTML(song.parsed, matchedOpening ? hitIdx : new Set())}</span>
       </div>`;
 
     const title = li.querySelector('.song-title');
@@ -1188,9 +1357,43 @@ document.getElementById('play-input').addEventListener('click', () => {
 });
 
 input.addEventListener('input', render);
-collapseBox.addEventListener('change', render);
-anykeyBox.addEventListener('change', render);
 applyMode();
+</script>
+<script>
+// feedback → ntfy notification (same topic as the composition page's button)
+(() => {
+  const TOPIC = 'rebsite-3f9k2xqp';
+  const box = document.getElementById('feedback-text');
+  const btn = document.getElementById('feedback-send');
+  const status = document.getElementById('feedback-status');
+  const say = msg => { status.textContent = msg; };
+
+  async function send() {
+    const text = box.value.trim();
+    if (!text || btn.disabled) return;
+    btn.disabled = true;
+    say('Sending…');
+    try {
+      const res = await fetch(`https://ntfy.sh/${TOPIC}`, {
+        method: 'POST',
+        headers: { 'Title': 'Melodic index feedback', 'Tags': 'memo' },
+        body: text
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      box.value = '';
+      say('Thanks :~)');
+    } catch (err) {
+      say("Couldn't send — try again?");
+      console.error('ntfy publish failed:', err);
+    } finally {
+      btn.disabled = false;
+      setTimeout(() => say(''), 4000);
+    }
+  }
+
+  btn.addEventListener('click', send);
+  box.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+})();
 </script>
 <script>
 // light / dark toggle, same as the blog
