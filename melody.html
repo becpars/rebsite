@@ -697,7 +697,7 @@ const SONGS = [
   { title: "Do-Re-Mi", credit: "Richard Rodgers", year: "1959", notes: "1 2 3 1 3 1 3", rhythm: "1.5 0.5 1.5 0.5 1 1 2", bpm: 144, also: "" },
   { title: "My Favorite Things", credit: "Richard Rodgers", year: "1959", mode: "minor", notes: "1 5 5 2 1 1 5, 1 1 2 1", rhythm: "1 1 1 1 1 1 1 1 1 1 2", bpm: 192, also: "" },
   { title: "Maria", credit: "Leonard Bernstein", year: "1957", notes: "1 #4 5", rhythm: "1 1 3", also: "" },
-  { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120, also: "" },
+  { title: "Star Wars (Main Title)", credit: "John Williams", year: "1977", notes: "5, 5, 5, 1 5 4 3 2 1' 5", rhythm: "0.33 0.33 0.34 2 2 0.33 0.33 0.34 2 1", bpm: 120, also: "1 5 4 3 2 8", },
   { title: "The Imperial March", credit: "John Williams", year: "1980", mode: "minor", notes: "1 1 1 b6, b3 1 b6, b3 1", rhythm: "1 1 1 0.75 0.25 1 0.75 0.25 2", bpm: 120, also: "" },
   { title: "Jaws", credit: "John Williams", year: "1975", notes: "7, 1 7, 1 7, 1 7, 1 7, 1", rhythm: "1 3 1 3 1 1 1 1 1 3", bpm: 170, also: "" },
   { title: "Close Encounters of the Third Kind (motif)", credit: "John Williams", year: "1977", notes: "2 3 1 1, 5,", rhythm: "1 1 1 1 2", bpm: 96, also: "" },
@@ -747,6 +747,11 @@ const SONGS = [
   // These don't show on the page until their notes are filled in.
   // Add the opening notes (and mode: "minor" if needed); rhythm and bpm are optional.
 
+  // 1950s
+  { title: "Willow Weep for Me", credit: "Billie Holiday", year: "1954", notes: "8 1 2 4 2", rhythm: "0.3 1 0.7 0.3 1", bpm: 70, also: "" },   
+  { title: "El Paso", credit: "Marty Robbins", year: "1959", notes: "1 1 3 5 3 1 2 2 4 6 4", rhythm: "1 1 0.5 1.5 1 1 1 0.5 1.5 0.5 1.5", bpm: 200, also: "" },  
+  { title: "What Is It", credit: "Oscar Peterson", year: "1957", notes: "8 8 6 8 8 6 8", rhythm: "1.7 1.3 1 1.7 1.3 0.5 2", also: "" },
+
   // 1960s
   { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", also: "" },
   { title: "Moon River", credit: "Henry Mancini", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", also: "" },
@@ -757,11 +762,14 @@ const SONGS = [
   { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "", also: "" },   // TODO: needs melody
   { title: "What the World Needs Now Is Love", credit: "Jackie DeShannon", year: "1965", notes: "1 1 5 5 3", rhythm: "0.7 0.3 2 1 3", also: "" },
   { title: "What a Wonderful World", credit: "Louis Armstrong", year: "1967", notes: "5, 7, 1 1 5", rhythm: "0.7 0.3 1.7 0.3 2", bpm: 70, also: "" },
+  { title: "Ain't No Mountain High Enough", credit: "Marvin Gaye & Tammi Terrell", year: "1967", notes: "6 6 6 6 5 5 3", rhythm: "1 1 1 0.5 1.5 0.5 2", also: "" },
   { title: "Blackbird", credit: "The Beatles", year: "1968", notes: "1 1 1 1 1 1 1 5 5", rhythm: "0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.75 2", also: "" },
+  { title: "Hooked on a Feeling", credit: "B.J. Thomas", year: "1968", notes: "4 4 4 4 3 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", also: "" },
   { title: "In My Life", credit: "The Beatles", year: "1968", notes: "3 1' 3 4 5 7", rhythm: "1 1 0.5 0.5 0.5 3", also: "" },  
   { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "3 2 3 1", rhythm: "0.5 1 1 2", also: "" },
   { title: "Come Together", credit: "The Beatles", year: "1969", notes: "1 1 5 3", rhythm: "0.5 0.25 0.5 2", also: "" }, 
   { title: "Oh! Darling", credit: "The Beatles", year: "1969", notes: "6 8 6 5", rhythm: "2 1 2 1", bpm: 160, also: "" },
+  { title: "River Man", credit: "Nick Drake", year: "1969", notes: "5 4 5 4 5 8 8", rhythm: "0.3 0.3 0.5 0.5 0.7 0.3 3", also: "" },
 
   // 1970s
   { title: "Let It Be", credit: "The Beatles", year: "1970", notes: "5 5 5 5 6 3 5 5 8 9", also: "", rhythm: "0.5 0.5 1 0.5 1 1 1.5 1 0.5 1.5", bpm: 150 },
@@ -771,12 +779,17 @@ const SONGS = [
   { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", also: "" },
   { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", also: "" },
   { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", also: "" },
+  { title: "Voulez-Vous", credit: "ABBA", year: "1979", notes: "1 b3 4", rhythm: "1 1 3", also: "" },
+  { title: "Gimme! Gimme! Gimme! (A Man After Midnight)", credit: "ABBA", year: "1979", notes: "1 b3 1 b3 1 b3 5 4 b3 1 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1 2", also: "" },
 
   // 1980s
+  { title: "YYZ", credit: "Rush", year: "1981", notes: "8 #4 8 8 8 #4 8 8", rhythm: "1 0.5 1 1 1 0.5 1 1", bpm: 170, also: "" }, 
   { title: "Don't Stop Believin'", credit: "Journey", year: "1981", notes: "3 1 2 2 3", rhythm: "0.5 0.5 0.5 1 1", also: "" },
+  { title: "You Make My Dreams", credit: "Daryl Hall & John Oates", year: "1981", notes: "6, 1 3 3 1 6, 5,", rhythm: "1 1 1 1.7 2 1 1", also: "" },
   { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "b3 1", rhythm: "0.5 0.5", also: "" },
   { title: "Sweet Dreams (Are Made of This)", credit: "Eurythmics", year: "1983", notes: "b3 b3 1 b3 b3 b3 2", rhythm: "1 1 1 0.5 1 0.5 2", also: "" },
   { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "3 5 6 3 5 6 3 1", rhythm: "0.7 1 2 0.3 1 0.7 1 1", also: "" },
+  { title: "I Wanna Dance with Somebody (Who Loves Me)", credit: "Whitney Houston", year: "1987", notes: "3 3 3 3 1 1 1 2", rhythm: "0.5 0.25 0.25 1 0.5 0.5 1 2", also: "" },
   { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "", also: "" },   // TODO: needs melody
 
   // 1990s
@@ -784,33 +797,40 @@ const SONGS = [
   { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", also: "" },
   { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", also: "" },  
   { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25", bpm: 80, also: "" }, 
-  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "", also: "" },   // TODO: needs melody
+  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", also: "" }, 
   { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", also: "" },
   { title: "Believe", credit: "Cher", year: "1998", notes: "5, 5, 5, 3 2 2 2 2 1 2", rhythm: "0.5 0.5 1 0.5 1 0.5 1 0.5 0.5 1", also: "" },
 
   // 2000s
   { title: "Oops!... I Did It Again", credit: "Britney Spears", year: "2000", notes: "5 1 7, 1 2 1", rhythm: "1 1 0.5 0.5 0.5 1", also: "" },
+  { title: "Teenage Dirtbag", credit: "Wheatus", year: "2000", notes: "1 3 3 2 1 3 7, 7, 1", rhythm: "0.5 0.5 0.5 1 1 1 1 1 1", also: "" },
+  { title: "A Thousand Miles", credit: "Vanessa Carlton", year: "2002", notes: "5 5 5 5 2 2", rhythm: "0.25 0.25 0.25 0.5 0.5 1", also: "" },
   { title: "Mr. Brightside", credit: "The Killers", year: "2003", notes: "3 2 1 2 1", rhythm: "1 1 1 2 2", also: "" },
   { title: "Toxic", credit: "Britney Spears", year: "2003", notes: "5 2 b3 2 1", rhythm: "1 1 0.5 0.5 1", also: "" },
+  { title: "I Believe in a Thing Called Love", credit: "The Darkness", year: "2003", notes: "1 1 1 1 1 1 1 1 6 6 6 6 6 5 5 5 5 3", rhythm: "0.25 0.25 0.5 0.25 0.25 0.5 0.5 1.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 1", also: "" },
   { title: "Halo", credit: "Beyoncé", year: "2008", notes: "8 8 8 8 8 8 8 5 4 3", rhythm: "0.25 0.25 0.25 0.25 0.5 0.25 0.5 0.25 0.25 1", bpm: 90, also: "" },
 
   // 2010s
   { title: "Rolling in the Deep", credit: "Adele", year: "2010", notes: "b7 5 b7 5 1' 2' b7", rhythm: "0.5 0.5 0.5 0.5 3 0.5 3", also: "b7 5 1'" },
   { title: "Call Me Maybe", credit: "Carly Rae Jepsen", year: "2011", notes: "1 3, 5, 1 5,", rhythm: "1 0.25 0.5 0.75 0.5", also: "" },
+  { title: "Love On Top", credit: "Beyoncé", year: "2011", notes: "8 6 8 6 8", rhythm: "0.75 0.5 0.5 0.5 2", also: "" },
   { title: "Royals", credit: "Lorde", year: "2013", notes: "5 3", bpm: 60, also: "" },
   { title: "Let It Go", credit: "Idina Menzel", year: "2013", notes: "6 7 1' 5 5 2'", rhythm: "0.5 0.5 3 0.5 0.5 3.5", also: "" },
   { title: "Shake It Off", credit: "Taylor Swift", year: "2014", notes: "2 3 1", rhythm: "0.5 0.5 2", also: "" },
   { title: "Uptown Funk (riff)", credit: "Mark Ronson ft. Bruno Mars", year: "2014", notes: "1 1 4 b3 1 4 b3 b7, 1", rhythm: "3.5 0.5 0.75 0.75 0.5 0.75 0.75 0.5 2", also: "1 4 b3" },
+  { title: "Tú Sí Sabes Quererme", credit: "Natalia Lafourcade", year: "2017", notes: "3 3 3 3 5 5 4", rhythm: "0.25 0.25 0.25 0.5 0.5 0.25 1", bpm: 60, also: "" },
+  { title: "Don't Bother Calling", credit: "Moses Sumney", year: "2017", notes: "8 7 5 3 5 3 8 7 7", rhythm: "0.25 0.25 0.25 0.5 0.5 0.5 0.5 0.5 2", bpm: 60, also: "" },
 
   // 2020s
-  { title: "Blinding Lights (riff)", credit: "The Weeknd", year: "2019", notes: "1 1 b7, 1 2 5, b7,", rhythm: "2 1.5 0.5 0.5 1 1 2", also: "" },
+  { title: "Blinding Lights (riff)", credit: "The Weeknd", year: "2019", notes: "1 1 b7, 1 2 5, b7,", rhythm: "2 1.5 0.5 0.5 1 1 2", bpm: 170, also: "" },
   { title: "Watermelon Sugar", credit: "Harry Styles", year: "2019", notes: "6, 1 2 2 1", rhythm: "0.5 0.5 1 0.25 0.75", bpm: 100, also: "" },
-  { title: "Levitating", credit: "Dua Lipa", year: "2020", notes: "", also: "" },   // TODO: needs melody
   { title: "drivers license", credit: "Olivia Rodrigo", year: "2021", notes: "3 5 5 4 3 2 2 1", rhythm: "0.5 1 1.5 0.5 1.5 0.5 1 1", also: "" },
   { title: "vampire (beginning)", credit: "Olivia Rodrigo", year: "2021", notes: "5 3 5 3 5 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", also: "" },
   { title: "vampire (chorus)", credit: "Olivia Rodrigo", year: "2021", notes: "3 2 1 6, 3 3 3", rhythm: "0.5 1.5 1 1 1 1 1", also: "6, 3" },
   { title: "Anti-Hero (chorus)", credit: "Taylor Swift", year: "2022", notes: "1 3 3", rhythm: "0.5 2 2", also: "" },
   { title: "Espresso", credit: "Sabrina Carpenter", year: "2024", notes: "b3 b3 b3 5 1 1 1 2 b7, b7, b7, 2 b3 2 1", rhythm: "0.25 0.25 0.5 1 0.25 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
+  { title: "Sky Above", credit: "Jacob Collier", year: "2019", notes: "5 3 5", rhythm: "2.7 0.3 3", also: "" },
+  { title: "Musician", credit: "Porter Robinson", year: "2021", notes: "", also: "" },   // TODO: needs melody
 ];
 
 /* ---------- parsing ---------- */
