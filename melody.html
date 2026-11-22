@@ -359,7 +359,17 @@
     .pad .acc { grid-row: 1; }
     /* with ♭ ♯ on top, the bottom row drops their two columns so ⌫ sits right after the keys */
     .pad.numbers-mode,
-    .pad.solfege { grid-template-columns: 2.6rem repeat(14, 1fr) minmax(1.6rem, 0.9fr); }
+    .pad.solfege { grid-template-columns: 2.6rem repeat(14, minmax(0, 1fr)) minmax(1.6rem, 0.9fr); }
+    /* a solfège key with no syllable for the chosen ♭ / ♯ */
+    .pad .deg-key:disabled,
+    .pad .deg-key:disabled:hover {
+      opacity: 0.35;
+      cursor: default;
+      background: transparent;
+      border-color: var(--line);
+    }
+    /* ♭ / ♯ in front of a number key: small and snug, so ♭♭3 still fits a phone-width key */
+    .pad .deg-key .acc-mark { font-size: 0.75em; letter-spacing: -0.08em; margin-right: 0.04em; }
     .pad.numbers-mode #backspace,
     .pad.solfege #backspace { grid-column: 16; }
 
@@ -513,7 +523,7 @@
       .wrap { padding: 1.5rem 1rem 0; }
       .pad { gap: 0.12rem; grid-template-columns: 2.2rem repeat(14, 1fr) repeat(2, minmax(1.1rem, 0.8fr)) minmax(1.3rem, 0.9fr); }
       .pad.numbers-mode,
-      .pad.solfege { grid-template-columns: 2.2rem repeat(14, 1fr) minmax(1.3rem, 0.9fr); }
+      .pad.solfege { grid-template-columns: 2.2rem repeat(14, minmax(0, 1fr)) minmax(1.3rem, 0.9fr); }
       /* phones: each song's notes always sit on their own line under the title */
       .song-main .degrees { flex-basis: 100%; }
       .degrees .lyric-now { position: static; display: inline-block; width: 5rem; padding: 0 0 0 0.3rem; text-align: center; line-height: 1; vertical-align: middle; }
@@ -726,7 +736,7 @@ const SONGS = [
   { title: "Symphony No. 5", credit: "Ludwig van Beethoven", year: "1808", mode: "minor", notes: "5 5 5 b3", rhythm: "0.5 0.5 0.5 3", bpm: 156, also: "" },
   { title: "Für Elise", credit: "Ludwig van Beethoven", year: "1810", mode: "minor", notes: "5 #4 5 #4 5 2 4 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1.5", bpm: 180, also: "" },
   { title: "Eine kleine Nachtmusik", credit: "W. A. Mozart", year: "1787", notes: "1 5, 1 5, 1 5, 1 3 5", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 156, also: "" },
-  { title: "Symphony No. 40 (1st movement)", credit: "W. A. Mozart", year: "1788", mode: "minor", notes: "b6 5 5 b6 5 5 b6 5 5 b3' b3' 2' 1' 1' b7 b6 b6 5 4 4", rhythm: "0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 2 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 2", bpm: 200, also: "" },
+  { title: "Symphony No. 40 (1st movement)", credit: "W. A. Mozart", year: "1788", mode: "minor", notes: "b6 5 5 b6 5 5 b6 5 5 b3'", rhythm: "0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 2", bpm: 200, also: "" },
   { title: "Gymnopédie No. 1", credit: "Erik Satie", year: "1888", notes: "3 5 4 3 7, 6, 7, 1 5,", rhythm: "1 1 1 1 1 1 1 1 6", bpm: 72, also: "" },
   { title: "Also sprach Zarathustra", credit: "Richard Strauss", year: "1896", notes: "1 5 1' 3' b3'", rhythm: "2 2 3 0.5 4", bpm: 60, also: "" },
   { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144, also: "" },
@@ -836,6 +846,7 @@ const SONGS = [
   { title: "Imagine", credit: "John Lennon", year: "1971", notes: "6, 1 6, 1 3 3 2", rhythm: "0.5 1 0.5 2.5 1 1 2", lyrics: "I- mag- ine all the peo- ple", also: "" },
   { title: "Lean on Me", credit: "Bill Withers", year: "1972", notes: "3 2 1", lyrics: "Lean on me", also: "" },
   { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", lyrics: "Strum- ming my pain with his fing- ers", also: "" },
+  { title: "Send in the Clowns", credit: "Stephen Sondheim", year: "1973", notes: "", also: "" },   // TODO: needs melody
   { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", lyrics: "Jo- lene, Jo- lene, Jo- lene, Jo- lene! _ _", also: "" },
   { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", lyrics: "Danc- ing queen", also: "" },
   { title: "Isn't She Lovely", credit: "Stevie Wonder", year: "1976", notes: "", also: "" },   // TODO: needs melody
@@ -855,13 +866,13 @@ const SONGS = [
 
   // 1990s
   { title: "Vogue", credit: "Madonna", year: "1990", notes: "", also: "" },   // TODO: needs melody
-  { title: "Even Flow", credit: "Pearl Jam", year: "1991", notes: "", also: "" },   // TODO: needs melody
+  { title: "Even Flow", credit: "Pearl Jam", year: "1991", notes: "3 b7,", rhythm: "2 2", lyrics: "E- ven", also: "" },   // TODO: needs melody
   { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", lyrics: "I'm a creep, I'm a weird- o", also: "" },
   { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", lyrics: "Do you have to let it ling- er", also: "" },
   { title: "Theme from Jurassic Park", credit: "John Williams", year: "1993", notes: "", also: "" },   // TODO: needs melody
   { title: "Can You Feel the Love Tonight", credit: "Elton John", year: "1994", notes: "", also: "" },   // TODO: needs melody
   { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25",lyrics: "Liv- ing in a gang- sta's pa- _ ra- dise", bpm: 80, also: "" }, 
-  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", lyrics: "I'm all out of faith, this is how I feel _", also: "" }, 
+  { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", lyrics: "I'm all out of faith, this is how I feel _", bpm: 200, also: "" }, 
   { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", lyrics: "Hit me ba- by one more time", also: "" },
   { title: "Believe", credit: "Cher", year: "1998", notes: "5, 5, 5, 3 2 2 2 2 1 2", rhythm: "0.5 0.5 1 0.5 1 0.5 1 0.5 0.5 1", lyrics: "Do you be- lieve _ in life af- ter love?", also: "" },
 
@@ -1169,6 +1180,11 @@ const SYLLABLES = ['do', 'ra', 're', 'me', 'mi', 'fa', 'fi', 'sol', 'le', 'la', 
 const WHITE_SYL = ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti'];
 const MINOR_SYL = ['do', 're', 'me', 'fa', 'sol', 'le', 'te'];   // do-based minor
 const keySyllables = () => quality === 'minor' ? MINOR_SYL : WHITE_SYL;
+// chromatic solfège by spelling: sharps rise (di ri fi si li), flats fall (ra me se le te)
+const CHROMA_SYL = {
+  '1': 'do', '#1': 'di', 'b2': 'ra', '2': 're', '#2': 'ri', 'b3': 'me', '3': 'mi', '4': 'fa', '#4': 'fi',
+  'b5': 'se', '5': 'sol', '#5': 'si', 'b6': 'le', '6': 'la', '#6': 'li', 'b7': 'te', '7': 'ti'
+};
 let mode = 'numbers';
 let quality = 'major';   // numbers view: major or minor (minor lowers 3, 6 and 7)
 try { if (localStorage.getItem('melodyQuality') === 'minor') quality = 'minor'; } catch (e) {}
@@ -1183,12 +1199,34 @@ function tokenFor(tok) {
   const marks = tok.match(/[,']*$/)[0];
   const core = tok.slice(0, tok.length - marks.length);
   const n = parseToken(core);
-  return (/^[1-7]$/.test(core) ? WHITE_SYL[+core - 1] : SYLLABLES[n.pc]) + marks;
+  return (CHROMA_SYL[core] || SYLLABLES[n.pc]) + marks;
 }
 
 // a note written out in the current mode, keeping its octave mark
 const spell = n => (mode === 'solfege' && n.kind !== 'note' ? SYLLABLES[n.pc] : n.label.replace('♭', 'b').replace('♯', '#'))
   + (n.oct > 0 ? "'".repeat(n.oct) : ','.repeat(-n.oct));
+
+// what a number key will type, given major/minor and a pending ♭ or ♯:
+// minor lowers 3 6 7; ♭ adds a flat (so minor's ♭3 becomes ♭♭3); ♯ adds a sharp (so minor's ♭3 goes back to 3)
+function keyPrefix(d) {
+  if (quality === 'minor' && '367'.includes(d)) return accidental === '#' ? '' : 'b' + accidental;
+  return accidental;
+}
+
+// show on each number key exactly what it will type
+function labelKeys() {
+  document.querySelectorAll('.pad .deg-key').forEach(b => {
+    const d = b.dataset.deg;
+    const pre = keyPrefix(d);
+    const mark = m => m ? `<span class="acc-mark">${m.replace(/b/g, '♭').replace(/#/g, '♯')}</span>` : '';
+    let text;
+    if (mode !== 'solfege') text = mark(pre) + d;
+    else if (CHROMA_SYL[pre + d]) text = CHROMA_SYL[pre + d];                         // mi → me, fa → fi …
+    else text = '=.=';   // no syllable for this one (♭do, ♯mi, ♭♭3 …)
+    b.innerHTML = b.dataset.oct ? `<span class="deg low">${text}</span>` : text;
+    b.disabled = text === '=.=';   // no syllable: greyed out, can't be tapped
+  });
+}
 
 function applyMode(rewrite = true) {
   const pad = document.querySelector('.pad');
@@ -1202,11 +1240,7 @@ function applyMode(rewrite = true) {
   const toggle = document.getElementById('mode-toggle');
   toggle.textContent = MODE_LABEL[next];   // shows where a click will take you
   toggle.title = `Switch to ${MODE_NAME[next]}`;
-  pad.querySelectorAll('.deg-key').forEach(b => {
-    const flat = quality === 'minor' && '367'.includes(b.dataset.deg);
-    const text = mode === 'solfege' ? keySyllables()[+b.dataset.deg - 1] : (flat ? '♭' : '') + b.dataset.deg;
-    b.innerHTML = b.dataset.oct ? `<span class="deg low">${text}</span>` : text;
-  });
+  labelKeys();
   // rewrite what's already typed into the current mode's spelling
   const parsed = rewrite ? parseInput(input.value) : null;
   if (parsed && parsed.length) {
@@ -1409,12 +1443,10 @@ document.querySelectorAll('.pad .quality-key').forEach(btn => {
 document.querySelectorAll('.pad [data-deg]').forEach(btn => {
   btn.addEventListener('click', () => {
     const d = btn.dataset.deg;
-    // minor: 3 6 7 are ♭3 ♭6 ♭7 (me le te); ♯ gives back the natural note
-    const pre = (quality === 'minor' && '367'.includes(d))
-      ? (accidental === '#' ? '' : 'b' + accidental) : accidental;
-    const tok = pre + d + (btn.dataset.oct ? ',' : '');
+    const tok = keyPrefix(d) + d + (btn.dataset.oct ? ',' : '');
     accidental = '';
     document.querySelectorAll('.pad .acc').forEach(a => a.classList.remove('on'));
+    labelKeys();
     addNote(tok);
   });
 });
@@ -1431,6 +1463,7 @@ document.querySelectorAll('.pad [data-acc]').forEach(btn => {
     document.querySelectorAll('.pad .acc').forEach(a => a.classList.remove('on'));
     accidental = turningOn ? btn.dataset.acc : '';
     btn.classList.toggle('on', turningOn);
+    labelKeys();
   });
 });
 // interval keypad: pick an interval and a direction, in either order
