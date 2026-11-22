@@ -30,6 +30,7 @@
       --key-black-hover: #2d4a78;
       --key-black-pressed: #4a6290;
       --key-edge: rgba(26, 39, 68, 0.25);   /* outline between piano keys */
+      --shape-bg: rgba(170, 120, 60, 0.07);   /* warm band behind "same interval" results */
     }
 
     /* Dark mode: same soft palette as the blog */
@@ -42,6 +43,7 @@
       --line: rgba(178, 171, 159, 0.25);
       --line-soft: rgba(178, 171, 159, 0.12);
       --tint: rgba(178, 171, 159, 0.08);
+      --shape-bg: rgba(214, 180, 130, 0.06);
       --field: rgba(0, 0, 0, 0.15);
       --key-white: #bdb6aa;
       --key-white-hover: #ccc5b9;
@@ -465,6 +467,17 @@
       font-weight: 600;
     }
 
+    /* "same interval" results (not an exact match) sit on a slightly darker band */
+    .song.shape,
+    .section-head.shape {
+      background: var(--shape-bg);
+      box-shadow: -0.4rem 0 0 var(--shape-bg), 0.4rem 0 0 var(--shape-bg);   /* a little breathing room at each end, without shifting the row */
+    }
+    .section-head.shape {
+      margin-bottom: 0;
+      padding: 0.35rem 0 0.25rem;
+    }
+
     /* octave dots, like numbered (jianpu) notation: dot below = lower, dot above = higher */
     .deg {
       position: relative;
@@ -640,6 +653,7 @@ const SONGS = [
   { title: "Twinkle, Twinkle, Little Star", credit: "French traditional", year: "ca. 1760s", notes: "1 1 5 5 6 6 5", rhythm: "1 1 1 1 1 1 2", lyrics: "Twin- kle twin- kle lit- tle star", also: "" },
   { title: "Go Down Moses", credit: "African-American Spiritual", year: "ca. 1853", notes: "5, b3 b3 2 2 b3 b3 1", rhythm: "1 1 1 1 1 1 1 2", lyrics: "When Is- rael was in E- gypt's land", also: "" },
   { title: "The Parting Glass", credit: "Scottish traditional", year: "ca. 1700s", notes: "3 2 1 6, 6, 5, 6, 1 1 2 2", rhythm: "0.5 0.5 1.5 0.5 0.25 1.25 0.5 1 0.5 0.5 1", lyrics: "of of all the mo- ney that e'er I I had", also: "" },
+  { title: "What Shall We Do with the Drunken Sailor", credit: "British traditional", year: "ca. 1830s", mode: "minor", notes: "5 5 5 5 5 5 5 1 b3 5", rhythm: "1 0.5 0.5 1 0.5 0.5 1 1 1 1", bpm: 160, lyrics: "What shall we do with a drun- ken sai- lor", also: "" },
   { title: "Mary Had a Little Lamb", credit: "American traditional", year: "ca. 1830s", notes: "3 2 1 2 3 3 3", rhythm: "1 1 1 1 1 1 2", lyrics: "Ma- ry had a lit- tle lamb", also: "" },
   { title: "Frère Jacques", credit: "French traditional", year: "ca. 1780s", notes: "1 2 3 1 1 2 3 1", rhythm: "1 1 1 1 1 1 1 1", lyrics: "Frè- re Jac- ques, frè- re Jac- ques", also: "" },
   { title: "Row, Row, Row Your Boat", credit: "American traditional", year: "ca. 1850s", notes: "1 1 1 2 3", rhythm: "1.5 1.5 1 0.5 1.5", lyrics: "Row, row, row your boat", also: "" },
@@ -673,6 +687,7 @@ const SONGS = [
   // ---------- anthems & occasions ----------
   { title: "Happy Birthday", credit: "Mildred & Patty Hill", year: "1893", notes: "5, 5, 6, 5, 1 7,", rhythm: "0.75 0.25 1 1 1 2", bpm: 120, lyrics: "Hap- py birth- day to you", also: "" },
   { title: "The Star-Spangled Banner", credit: "John Stafford Smith", year: "ca. 1773", notes: "5 3 1 3 5 1'", rhythm: "0.75 0.25 1 1 1 2", bpm: 108, lyrics: "O _ say, can you see", also: "" },
+  { title: "O Canada", credit: "Calixa Lavallée", year: "1880", notes: "3 5 5 1 2 3 4 5 6 2", rhythm: "2 1.5 0.5 3 1 1 1 1 1 3", bpm: 100, lyrics: "O Ca- na- da! Our home and na- tive land", also: "" },
   { title: "America the Beautiful", credit: "Samuel A. Ward", year: "1882", notes: "5 5 3 3 5 5 2 2", rhythm: "1 1.5 0.5 1 1 1.5 0.5 1", bpm: 108, lyrics: "O beau- ti- ful for spa- cious skies", also: "" },
   { title: "God Save the King / My Country, 'Tis of Thee", credit: "British traditional", year: "ca. 1740s", notes: "1 1 2 7, 1 2", rhythm: "1 1 1 1.5 0.5 1", bpm: 108, lyrics: "God save our gra- cious King", also: "" },
   { title: "Battle Hymn of the Republic", credit: "William Steffe", year: "ca. 1856", notes: "5 5 5 5 4 3 5 1' 2' 3' 3' 3' 2' 1'", rhythm: "0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.6 0.3 0.25 0.25 1.1 0.3 1", bpm: 108, lyrics: "Mine eyes have seen the glo- ry of the com- ing of the Lord", also: "" },
@@ -711,6 +726,9 @@ const SONGS = [
   { title: "Symphony No. 5", credit: "Ludwig van Beethoven", year: "1808", mode: "minor", notes: "5 5 5 b3", rhythm: "0.5 0.5 0.5 3", bpm: 156, also: "" },
   { title: "Für Elise", credit: "Ludwig van Beethoven", year: "1810", mode: "minor", notes: "5 #4 5 #4 5 2 4 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1.5", bpm: 180, also: "" },
   { title: "Eine kleine Nachtmusik", credit: "W. A. Mozart", year: "1787", notes: "1 5, 1 5, 1 5, 1 3 5", rhythm: "1.5 0.5 1.5 0.5 0.5 0.5 0.5 0.5 2", bpm: 156, also: "" },
+  { title: "Symphony No. 40 (1st movement)", credit: "W. A. Mozart", year: "1788", mode: "minor", notes: "b6 5 5 b6 5 5 b6 5 5 b3' b3' 2' 1' 1' b7 b6 b6 5 4 4", rhythm: "0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 2 0.5 0.5 1 0.5 0.5 1 0.5 0.5 1 2", bpm: 200, also: "" },
+  { title: "Gymnopédie No. 1", credit: "Erik Satie", year: "1888", notes: "3 5 4 3 7, 6, 7, 1 5,", rhythm: "1 1 1 1 1 1 1 1 6", bpm: 72, also: "" },
+  { title: "Also sprach Zarathustra", credit: "Richard Strauss", year: "1896", notes: "1 5 1' 3' b3'", rhythm: "2 2 3 0.5 4", bpm: 60, also: "" },
   { title: "Minuet in G", credit: "Christian Petzold (attr. Bach)", year: "ca. 1725", notes: "5 1 2 3 4 5 1 1", rhythm: "1 0.5 0.5 0.5 0.5 1 1 1", bpm: 144, also: "" },
   { title: "Canon in D", credit: "Johann Pachelbel", year: "ca. 1680", notes: "5 3 4 5 3 4 5 5, 6, 7, 1 2 3 4 3", rhythm: "1 0.5 0.5 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 1", bpm: 125, also: "" },
   { title: "Spring, from The Four Seasons", credit: "Antonio Vivaldi", year: "1725", notes: "1 3 3 3 2 1 5", rhythm: "1 1 1 1 0.5 0.5 3", bpm: 170, also: "" },
@@ -776,17 +794,29 @@ const SONGS = [
   // These don't show on the page until their notes are filled in.
   // Add the opening notes (and mode: "minor" if needed); rhythm and bpm are optional.
 
+  // folk, children's & traditional
+  { title: "Swing Low, Sweet Chariot", credit: "African-American Spiritual", year: "ca. 1860s", notes: "", also: "" },   // TODO: needs melody
+
+  // classical
+  { title: "Danse macabre", credit: "Camille Saint-Saëns", year: "1874", notes: "", also: "" },   // TODO: needs melody
+  { title: "Ride of the Valkyries", credit: "Richard Wagner", year: "1856", notes: "", also: "" },   // TODO: needs melody
+  { title: "Boléro", credit: "Maurice Ravel", year: "1928", notes: "", also: "" },   // TODO: needs melody
+
   // 1950s
+  { title: "Misty", credit: "Erroll Garner", year: "1954", notes: "", also: "" },   // TODO: needs melody
   { title: "Willow Weep for Me", credit: "Billie Holiday", year: "1954", notes: "8 1 2 4 2", rhythm: "0.3 1 0.7 0.3 1", bpm: 70, lyrics: "Wil- low weep for me", also: "" },   
   { title: "El Paso", credit: "Marty Robbins", year: "1959", notes: "1 1 3 5 3 1 2 2 4 6 4", rhythm: "1 1 0.5 1.5 1 1 1 0.5 1.5 0.5 1.5", lyrics: "Down in the west Tex- as town of El Pa- so", bpm: 200, also: "" },  
-  { title: "What Is It", credit: "Oscar Peterson", year: "1957", notes: "8 8 6 8 8 6 8", rhythm: "1.7 1.3 1 1.7 1.3 0.5 2", also: "" },
+  { title: "So Long, Farewell", credit: "Richard Rodgers", year: "1959", notes: "3 5 3 5", rhythm: "0.5 1.5 0.5 1.5", lyrics: "So long, fare- well", also: "" }, 
+  { title: "What Is It?", credit: "Oscar Peterson", year: "1957", notes: "8 8 6 8 8 6 8", rhythm: "1.7 1.3 1 1.7 1.3 0.5 2", also: "" },
 
   // 1960s
   { title: "Can't Help Falling in Love", credit: "Elvis Presley", year: "1961", notes: "1 5 1 2 3 4 3 2", rhythm: "2 2 3 0.5 0.5 2 2 3", lyrics: "Wise men say, on- ly fools rush in", also: "" },
   { title: "Moon River", credit: "Henry Mancini", year: "1961", notes: "5, 2 1", rhythm: "3 0.5 2.5", lyrics: "Moon ri- ver", also: "" },
+  { title: "Meet the Flintstones", credit: "Hoyt Curtin", year: "1961", notes: "5 1 8 6 5 1", rhythm: "1 1.5 1 0.5 1 1", lyrics: "Flint- stones, meet the Flint- stones", also: "" },
   { title: "Stand By Me", credit: "Ben E. King", year: "1961", notes: "3 5 6 3 5 1 2 3 2 1", rhythm: "0.5 0.5 3 0.5 4.5 0.25 0.25 0.6 0.6 3.6", lyrics: "When the night has come and the land is dark", also: "" },
   { title: "I Want to Hold Your Hand", credit: "The Beatles", year: "1963", notes: "8 7 6 5 4 5 4 3 2 3 2 1", rhythm: "0.5 0.5 0.5 1 1 0.75 0.25 0.75 0.25 0.25 0.25 1", lyrics: "I wan- na hold your hand _ _ _ _ _ _", also: "" },
   { title: "My Girl", credit: "The Temptations", year: "1964", notes: "", also: "" },   // TODO: needs melody
+  { title: "Linus and Lucy (Peanuts theme)", credit: "Vince Guaraldi Trio", year: "1964", notes: "", also: "" },   // TODO: needs melody
   { title: "Unchained Melody", credit: "The Righteous Brothers", year: "1965", notes: "", also: "" },   // TODO: needs melody
   { title: "(I Can't Get No) Satisfaction", credit: "The Rolling Stones", year: "1965", notes: "", also: "" },   // TODO: needs melody
   { title: "What the World Needs Now Is Love", credit: "Jackie DeShannon", year: "1965", notes: "1 1 5 5 3", rhythm: "0.7 0.3 2 1 3", lyrics: "What the world needs now", also: "" },
@@ -794,6 +824,7 @@ const SONGS = [
   { title: "Ain't No Mountain High Enough", credit: "Marvin Gaye & Tammi Terrell", year: "1967", notes: "6 6 6 6 5 5 3", rhythm: "1 1 1 0.5 1.5 0.5 2", lyrics: "Ain't no moun- tain high e- nough", also: "" },
   { title: "Blackbird", credit: "The Beatles", year: "1968", notes: "1 1 1 1 1 1 1 5 5", rhythm: "0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.75 2", lyrics: "Black- bird sing- in' in the dead of night", also: "" },
   { title: "Hooked on a Feeling", credit: "B.J. Thomas", year: "1968", notes: "4 4 4 4 3 3", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5", lyrics: "Hooked on a feel- _ in'", also: "" },
+  { title: "Ob-La-Di, Ob-La-Da", credit: "The Beatles", year: "1968", notes: "", also: "" },   // TODO: needs melody
   { title: "In My Life", credit: "The Beatles", year: "1968", notes: "3 1' 3 4 5 7", rhythm: "1 1 0.5 0.5 0.5 3", also: "" },  
   { title: "Here Comes the Sun", credit: "The Beatles", year: "1969", notes: "3 2 3 1", rhythm: "0.5 1 1 2", lyrics: "here comes the sun", also: "" },
   { title: "Come Together", credit: "The Beatles", year: "1969", notes: "1 1 5 3", rhythm: "0.5 0.25 0.5 2", lyrics: "Come to- geth- er", also: "" }, 
@@ -807,6 +838,7 @@ const SONGS = [
   { title: "Killing Me Softly with His Song", credit: "Roberta Flack", year: "1973", notes: "8 8 8 8 5 3 5 4", rhythm: "0.5 0.5 0.5 1 0.5 0.5 1 2", lyrics: "Strum- ming my pain with his fing- ers", also: "" },
   { title: "Jolene", credit: "Dolly Parton", year: "1973", notes: "1 1 b3 b3 4 4 b7 1' b7 5", rhythm: "0.75 1.25 0.75 1.25 0.75 1 1 0.75 0.25 1", lyrics: "Jo- lene, Jo- lene, Jo- lene, Jo- lene! _ _", also: "" },
   { title: "Dancing Queen", credit: "ABBA", year: "1976", notes: "7 1' 1'", lyrics: "Danc- ing queen", also: "" },
+  { title: "Isn't She Lovely", credit: "Stevie Wonder", year: "1976", notes: "", also: "" },   // TODO: needs melody
   { title: "Voulez-Vous", credit: "ABBA", year: "1979", notes: "1 b3 4", rhythm: "1 1 3", lyrics: "Vou- lez vous", also: "" },
   { title: "Gimme! Gimme! Gimme! (A Man After Midnight)", credit: "ABBA", year: "1979", notes: "1 b3 1 b3 1 b3 5 4 b3 1 b3 1", rhythm: "0.5 0.5 0.5 0.5 0.5 0.5 0.5 1 0.5 0.5 1 2", lyrics: "Gim- me gim- me gim- me a man af- ter mid- night", also: "" },
 
@@ -816,14 +848,18 @@ const SONGS = [
   { title: "You Make My Dreams", credit: "Daryl Hall & John Oates", year: "1981", notes: "6, 1 3 3 1 6, 5,", rhythm: "1 1 1 1.7 2 1 1", lyrics: "You make my dreams come true _", also: "" },
   { title: "Beat It", credit: "Michael Jackson", year: "1983", notes: "b3 1", rhythm: "0.5 0.5", lyrics: "beat it", also: "" },
   { title: "Sweet Dreams (Are Made of This)", credit: "Eurythmics", year: "1983", notes: "b3 b3 1 b3 b3 b3 2", rhythm: "1 1 1 0.5 1 0.5 2", lyrics: "Sweet dreams are made of this _", also: "" },
+  { title: "Don't You (Forget About Me)", credit: "Simple Minds", year: "1985", notes: "", also: "" },   // TODO: needs melody
   { title: "Wake Me Up Before You Go-Go", credit: "Wham!", year: "1984", notes: "3 5 6 3 5 6 3 1", rhythm: "0.7 1 2 0.3 1 0.7 1 1", lyrics: "Wake me up be- fore you go- go", also: "" },
   { title: "I Wanna Dance with Somebody (Who Loves Me)", credit: "Whitney Houston", year: "1987", notes: "3 3 3 3 1 1 1 2", rhythm: "0.5 0.25 0.25 1 0.5 0.5 1 2", lyrics: "I wan- na dance with some- bo- dy", also: "" },
   { title: "Like a Prayer", credit: "Madonna", year: "1989", notes: "", also: "" },   // TODO: needs melody
 
   // 1990s
   { title: "Vogue", credit: "Madonna", year: "1990", notes: "", also: "" },   // TODO: needs melody
+  { title: "Even Flow", credit: "Pearl Jam", year: "1991", notes: "", also: "" },   // TODO: needs melody
   { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", lyrics: "I'm a creep, I'm a weird- o", also: "" },
-  { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", lyrics: "Do you have to let it ling- er", also: "" },  
+  { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", lyrics: "Do you have to let it ling- er", also: "" },
+  { title: "Theme from Jurassic Park", credit: "John Williams", year: "1993", notes: "", also: "" },   // TODO: needs melody
+  { title: "Can You Feel the Love Tonight", credit: "Elton John", year: "1994", notes: "", also: "" },   // TODO: needs melody
   { title: "Gangsta's Paradise", credit: "Coolio", year: "1995", notes: "1 1 1 5, 2 b3 2 1 b7, 1", rhythm: "0.25 0.25 0.5 0.25 0.5 0.75 0.25 0.25 0.25 0.25",lyrics: "Liv- ing in a gang- sta's pa- _ ra- dise", bpm: 80, also: "" }, 
   { title: "Torn", credit: "Natalie Imbruglia", year: "1997", notes: "3 3 3 2 2 2 2 3 1 1 6,", rhythm: "1 1 0.5 1 3 1 1 1 1 0.5 2", lyrics: "I'm all out of faith, this is how I feel _", also: "" }, 
   { title: "...Baby One More Time", credit: "Britney Spears", year: "1998", notes: "5 b6 5 b6 5 b6 5", lyrics: "Hit me ba- by one more time", also: "" },
@@ -1308,10 +1344,10 @@ function render() {
     const sameShape = fresh(searchIntervals(moves, { collapse: true }));
     if (sameShape.length) {
       const head = document.createElement('li');
-      head.className = 'section-head';
+      head.className = 'section-head shape';
       head.textContent = `With the same ${moves.length === 1 ? 'interval' : 'intervals'} · ${plural(sameShape.length)}`;
       results.append(head);
-      renderList(sameShape, query, null);
+      renderList(sameShape, query, null, 'shape');
     }
   }
 }
@@ -1335,13 +1371,13 @@ function searchExact(qPitches) {
   return out;
 }
 
-function renderList(list, query, description) {
+function renderList(list, query, description, kind = '') {
   if (description !== null) count.textContent = `${list.length} ${list.length === 1 ? 'song' : 'songs'} ${description}`;
   for (const { song, notes, hitIdx } of list) {
     // always show the song's opening; only bold it when the opening itself matched (not an "also" line)
     const matchedOpening = !notes || notes === song.parsed;
     const li = document.createElement('li');
-    li.className = 'song';
+    li.className = kind ? `song ${kind}` : 'song';
     li.innerHTML = `
       <button class="song-play" type="button" title="Play the opening">▶</button>
       <div class="song-main">
