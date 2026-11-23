@@ -1091,13 +1091,32 @@ function stopPlayback() {
   playing = [];
 }
 
+// iPhones mute web audio while the ring/silent switch is on, unless the page counts as "playing media".
+// Newer Safari lets us say so directly (navigator.audioSession). On older iPhones, playing a silent
+// <audio> clip once, during a tap, flips the phone into media mode so the notes come through.
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try {
+    if (navigator.audioSession) { navigator.audioSession.type = 'playback'; return; }
+  } catch (e) {}
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+  const silence = new Audio('data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==');
+  silence.loop = true;
+  silence.setAttribute('playsinline', '');
+  silence.play().catch(() => { audioUnlocked = false; });   // try again on the next tap
+}
+
 function playNotes(notes, rhythm, bpm = 120) {
   if (!notes || !notes.length) return;
   const beats = rhythm ? rhythm.split(/\s+/).map(Number) : null;
   const timed = beats && beats.length === notes.length && beats.every(b => b > 0);
   if (beats && !timed) console.warn('Rhythm doesn\'t match the number of notes; playing evenly.');
+  unlockAudio();
   audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-  if (audio.state === 'suspended') audio.resume();
+  if (audio.state !== 'running') audio.resume();   // also wakes it after a phone call or switching apps ("interrupted")
   stopPlayback();   // a new playback interrupts whatever was playing
   const tonic = 261.63; // C4
   let t = audio.currentTime + 0.05;
