@@ -380,6 +380,15 @@
     }
 
     /* ---------- results ---------- */
+    /* two notes typed: name the interval between them */
+    .interval-readout {
+      margin: 1rem 0 0;
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+    .interval-readout:empty { display: none; }
+    .interval-readout b { font-weight: 600; }
+
     .count {
       margin: 1.1rem 0 0.25rem;
       font-size: 0.72rem;
@@ -623,6 +632,7 @@
     </div>
 
 
+    <p class="interval-readout" id="interval-readout" aria-live="polite"></p>
     <p class="count" id="count" aria-live="polite"></p>
     <ul class="results" id="results"></ul>
   </div>
@@ -720,7 +730,7 @@ const SONGS = [
   { title: "Away in a Manger", credit: "William J. Kirkpatrick", year: "1895", notes: "5, 1 1 2 3 1 1 3 4 5 5 6 4", rhythm: "1 1 1 0.5 0.5 1 1 0.5 0.5 1 1 1 1", lyrics: "A- way in a _ man- ger, no _ crib for a bed", also: "" },
   { title: "O Come, All Ye Faithful", credit: "John Francis Wade", year: "ca. 1744", notes: "1 1 5, 1 2 5,", rhythm: "1 2 1 1 2 2", bpm: 120, lyrics: "O come, all ye faith- ful", also: "" },
   { title: "Rudolph the Red-Nosed Reindeer", credit: "Johnny Marks", year: "1949", notes: "5 6 5 3 1' 6 5", rhythm: "0.5 1 0.5 1 1 1 3", lyrics: "Ru- dolph the red- nosed rein- deer", bpm: 144, also: "" },
-  { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1' 7 6 5", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", also: "" },
+  { title: "Frosty the Snowman", credit: "Steve Nelson & Jack Rollins", year: "1950", notes: "5 3 4 5 1' 7 1' 2' 1' 7 6 5", rhythm: "1 0.75 0.25 0.5 1 0.25 0.25 0.5 0.5 0.5 0.5 1", lyrics: "Frost- y the snow- man", also: "" },
   { title: "Santa Claus Is Comin' to Town", credit: "J. Fred Coots", year: "1934", notes: "3 5 1 3 2 4 7, 1", rhythm: "1 1 1 1 1 2 1 3", lyrics: "San- ta Claus is com- ing to town", bpm: 130, also: "" },
   { title: "Santa Baby", credit: "Eartha Kitt", year: "1953", notes: "5, 1 5, 6,", rhythm: "0.7 0.3 0.7 1", lyrics: "San- ta ba- by", bpm: 86, also: "" },
   { title: "Have Yourself a Merry Little Christmas (ending)", credit: "Judy Garland", year: "1944", notes: "3 3 4, 6, 1 3 2 1 7, 6, 7,", rhythm: "1 1 1 1 1 0.5 0.5 0.5 0.5 1 1", lyrics: "So have your- self a mer- ry lit- tle Christ- mas", also: "" },
@@ -866,6 +876,7 @@ const SONGS = [
   // 1990s
   { title: "Vogue", credit: "Madonna", year: "1990", notes: "", also: "" },   // TODO: needs melody
   { title: "Even Flow", credit: "Pearl Jam", year: "1991", notes: "3 b7,", rhythm: "2 2", lyrics: "E- ven", also: "" },
+  { title: "Beauty and the Beast", credit: "Alan Menken", year: "1991", notes: "3 5 7 8 4", rhythm: "0.5 0.5 0.5 0.5 2", lyrics: "Tale as old as time", also: "" },   // TODO: needs melody
   { title: "Creep", credit: "Radiohead", year: "1992", notes: "1 3 3 1 3 3 7,", rhythm: "0.5 1 2.5 0.5 1 1 2", lyrics: "I'm a creep, I'm a weird- o", also: "" },
   { title: "Linger", credit: "The Cranberries", year: "1993", notes: "6, 6, 4 3 2 3 2 1", rhythm: "0.25 0.25 0.5 0.5 0.25 0.5 0.5 2", lyrics: "Do you have to let it ling- er", also: "" },
   { title: "Theme from Jurassic Park", credit: "John Williams", year: "1993", notes: "8 7 8 5 4", rhythm: "0.5 0.5 1 1 1", also: "" }, 
@@ -950,6 +961,18 @@ function parseInterval(tok) {
   const down = m[1] === '↓' || m[1] === '-' || m[1] === 'v';
   return { kind: 'interval', semis: down ? -size : size };
 }
+// an interval in words, for two typed notes: { short: 'P4', full: 'perfect 4th', a: 'a', dir: 'up' }
+const INTERVAL_FULL = ['unison', 'minor 2nd', 'major 2nd', 'minor 3rd', 'major 3rd', 'perfect 4th', 'tritone',
+  'perfect 5th', 'minor 6th', 'major 6th', 'minor 7th', 'major 7th', 'octave'];
+const COMPOUND = { 13: ['m9', 'minor 9th'], 14: ['M9', 'major 9th'], 15: ['m10', 'minor 10th'], 16: ['M10', 'major 10th'],
+  17: ['P11', 'perfect 11th'], 18: ['TT', 'tritone plus an octave'], 19: ['P12', 'perfect 12th'], 24: ['P15', 'two octaves'] };
+function describeInterval(d) {
+  const n = Math.abs(d);
+  const [short, full] = n <= 12 ? [INTERVAL_NAME[n], INTERVAL_FULL[n]] : COMPOUND[n] || [`${n} semitones`, `${n} half steps`];
+  // "an m3", "an M6" (said "em"), but "a P4", "a TT"
+  return { short, full, a: /^[Mm]/.test(short) ? 'an' : 'a', dir: d > 0 ? 'up' : 'down' };
+}
+
 const intervalToken = d => d === 0 ? 'P1' : (d > 0 ? '↑' : '↓') + INTERVAL_NAME[Math.min(Math.abs(d), 12)];
 
 // Text typed by the person -> list of notes, or list of intervals (spaces optional for plain digits: "5123")
@@ -1308,6 +1331,7 @@ function degreesHTML(notes, hitIdx) {
 function render() {
   const query = parseInput(input.value);
   results.innerHTML = '';
+  document.getElementById('interval-readout').textContent = '';   // filled in below, only for two notes
   if (query === null) {
     count.textContent = "Hmm, I can't read that. Try numbers 1–7 (with b or # if needed), solfège, note names like E D# E, or intervals like ↑P4 ↓m2.";
     return;
@@ -1328,6 +1352,10 @@ function render() {
   const moves = pitches.slice(1).map((p, i) => p - pitches[i]).filter(d => d !== 0);
   const showNote = n => labelFor(n) + (n.oct > 0 ? "'".repeat(n.oct) : ','.repeat(-n.oct));
   const shown = query.map(showNote).join(' ');
+  // just two different notes: say what interval that is
+  const readout = document.getElementById('interval-readout');
+  const iv = moves.length === 1 ? describeInterval(moves[0]) : null;
+  if (iv) readout.append(`${shown}: that's ${iv.a} `, Object.assign(document.createElement('b'), { textContent: `${iv.short} ${iv.dir}` }), ` (${iv.full})`);
   if (!moves.length) {
     count.textContent = query.length ? `Add one more note to search by the shape of ${shown}` : '';
     return;
@@ -1397,7 +1425,9 @@ function render() {
     if (sameShape.length) {
       const head = document.createElement('li');
       head.className = 'section-head shape';
-      head.textContent = `With the same ${moves.length === 1 ? 'interval' : 'intervals'} · ${plural(sameShape.length)}`;
+      head.textContent = iv
+        ? `Songs with ${iv.a} ${iv.short} ${iv.dir} · ${plural(sameShape.length)}`
+        : `With the same intervals · ${plural(sameShape.length)}`;
       results.append(head);
       renderList(sameShape, query, null, 'shape');
     }
